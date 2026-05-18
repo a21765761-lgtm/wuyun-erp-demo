@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>舞韻舞蹈服飾 ERP · 報表分析</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --black: #0a0c10;
+      --gray-deep: #151a22;
+      --gray: #1c2330;
+      --gray-mid: #283040;
+      --tiffany: #5eead4;
+      --tiffany-bright: #99f6e4;
+      --tiffany-deep: #14b8a6;
+      --tiffany-glow: rgba(94, 234, 212, 0.45);
+      --tiffany-soft: rgba(94, 234, 212, 0.14);
+      --purple: #c4b5fd;
+      --purple-bright: #ddd6fe;
+      --purple-soft: rgba(167, 139, 250, 0.18);
+      --purple-glow: rgba(167, 139, 250, 0.35);
+      --white: #ffffff;
+      --gold: var(--tiffany);
+      --gold-light: var(--tiffany-bright);
+      --gold-glow: var(--tiffany-glow);
+      --gold-soft: var(--tiffany-soft);
+      --cream: #f8fafc;
+      --text: #f1f5f9;
+      --text-soft: #94a3b8;
+      --text-muted: #64748b;
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.15);
+      --success: #6ee7b7;
+      --success-soft: rgba(110, 231, 183, 0.14);
+      --sidebar-w: 260px;
+      --header-h: 76px;
+      --radius-lg: 22px;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --shadow-card: 0 4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 234, 212, 0.08);
+      --shadow-hover: 0 16px 56px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(94, 234, 212, 0.2), 0 0 48px rgba(94, 234, 212, 0.12), 0 0 80px rgba(167, 139, 250, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 15px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .stage-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .stage-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(165deg, #0d1218 0%, var(--black) 40%, #0a0e14 100%);
+    }
+
+    .spotlight {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+    }
+
+    .spotlight-main {
+      width: 70vw;
+      max-width: 900px;
+      height: 50vh;
+      top: -15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(94, 234, 212, 0.2) 0%, rgba(167, 139, 250, 0.1) 45%, transparent 70%);
+      animation: spotlightPulse 8s ease-in-out infinite;
+    }
+
+    .spotlight-left {
+      width: 380px;
+      height: 380px;
+      bottom: 5%;
+      left: -5%;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.12) 0%, transparent 70%);
+      animation: spotlightPulseSide 9s ease-in-out infinite -2s;
+    }
+
+    .spotlight-purple {
+      width: 420px;
+      height: 420px;
+      top: 40%;
+      right: 10%;
+      background: radial-gradient(circle, rgba(167, 139, 250, 0.14) 0%, transparent 70%);
+      animation: spotlightPulseSide 9s ease-in-out infinite -4s;
+    }
+
+    .stage-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 30%, transparent 28%, rgba(0, 0, 0, 0.72) 100%);
+    }
+
+    @keyframes spotlightPulse {
+      0%, 100% { opacity: 0.85; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    @keyframes spotlightPulseSide {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+    }
+
+    .sidebar-overlay.open { display: block; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, rgba(15, 18, 24, 0.97) 0%, rgba(10, 12, 16, 0.99) 100%);
+      border-right: 1px solid rgba(94, 234, 212, 0.12);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .sidebar-brand { padding: 24px 18px 20px; border-bottom: 1px solid rgba(94, 234, 212, 0.1); }
+
+    .brand-mark { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, var(--tiffany-bright), var(--tiffany-deep));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 28px var(--tiffany-glow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .brand-name h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--white), var(--tiffany-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-name p { font-size: 0.68rem; color: var(--tiffany); letter-spacing: 0.14em; margin-top: 4px; }
+    .brand-tagline { display: block; font-size: 0.62rem; color: var(--purple); margin-top: 3px; }
+
+    .sidebar-nav { flex: 1; padding: 20px 14px; overflow-y: auto; }
+
+    .nav-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      padding: 6px 12px;
+      margin-bottom: 12px;
+      border-left: 2px solid var(--tiffany);
+      background: linear-gradient(90deg, rgba(94, 234, 212, 0.12), transparent);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: var(--text-soft);
+      font-size: 0.88rem;
+      text-decoration: none;
+      transition: all 0.35s var(--ease-out);
+    }
+
+    .nav-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-icon svg { width: 17px; height: 17px; opacity: 0.65; stroke-width: 1.5; }
+
+    .nav-item:hover {
+      color: var(--white);
+      background: rgba(94, 234, 212, 0.08);
+      transform: translateX(4px);
+      box-shadow: 0 4px 24px rgba(94, 234, 212, 0.1);
+    }
+
+    .nav-item.active {
+      color: var(--tiffany-bright);
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.22), rgba(167, 139, 250, 0.1));
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 8px 32px rgba(94, 234, 212, 0.15);
+    }
+
+    .nav-item.active .nav-icon {
+      background: rgba(94, 234, 212, 0.25);
+      box-shadow: 0 0 20px var(--tiffany-glow);
+    }
+
+    .nav-item.active .nav-icon svg { opacity: 1; color: var(--white); }
+
+    .sidebar-footer { padding: 16px 14px 24px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(94, 234, 212, 0.04);
+      border: 1px solid rgba(94, 234, 212, 0.12);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--gray-mid);
+      border: 1px solid rgba(94, 234, 212, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--tiffany-bright);
+    }
+
+    .user-meta .name { font-size: 0.85rem; font-weight: 500; }
+    .user-meta .role { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      height: var(--header-h);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(94, 234, 212, 0.1);
+      background: rgba(10, 12, 16, 0.75);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 20px; }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .breadcrumb { font-size: 0.8rem; color: var(--text-muted); }
+    .breadcrumb a { color: var(--text-soft); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--tiffany); }
+    .breadcrumb strong { color: var(--cream); font-weight: 500; }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .period-select {
+      padding: 10px 36px 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(94, 234, 212, 0.2);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      transition: all 0.3s var(--ease);
+    }
+
+    .period-select:focus {
+      outline: none;
+      border-color: rgba(94, 234, 212, 0.45);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+    }
+
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--tiffany-bright), var(--tiffany), var(--tiffany-deep));
+      color: var(--black);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 24px var(--tiffany-glow);
+      transition: all 0.35s var(--ease-out);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px var(--tiffany-glow), 0 0 50px var(--purple-glow);
+    }
+
+    .content { padding: 28px 32px 48px; flex: 1; }
+
+    .page-intro {
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s var(--ease-out) backwards;
+    }
+
+    .page-intro h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--white), var(--tiffany-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .page-intro p { font-size: 0.9rem; color: var(--text-soft); font-weight: 300; }
+
+    /* KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(160deg, rgba(28, 35, 48, 0.92) 0%, rgba(15, 18, 24, 0.96) 100%);
+      border: 1px solid rgba(94, 234, 212, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.6s var(--ease-out) backwards;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.5), rgba(167, 139, 250, 0.35), transparent);
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -20%;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+      transition: opacity 0.4s var(--ease);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .kpi-card:hover::after { opacity: 1.5; }
+
+    .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .kpi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      background: var(--tiffany-soft);
+      border: 1px solid rgba(94, 234, 212, 0.2);
+      color: var(--tiffany);
+    }
+
+    .kpi-icon.purple { background: var(--purple-soft); border-color: rgba(167, 139, 250, 0.25); color: var(--purple); }
+    .kpi-icon.warn { background: var(--danger-soft); border-color: rgba(251, 113, 133, 0.25); color: var(--danger); }
+
+    .kpi-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; }
+
+    .kpi-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-value.sm { font-size: 1.15rem; line-height: 1.35; }
+
+    .kpi-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .kpi-hint em { font-style: normal; color: var(--tiffany); }
+    .kpi-hint.down em { color: var(--success); }
+    .kpi-hint.up-warn em { color: var(--danger); }
+
+    .trend-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-top: 8px;
+    }
+
+    .trend-badge.up { background: var(--success-soft); color: var(--success); }
+    .trend-badge.down { background: var(--danger-soft); color: var(--danger); }
+
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .charts-grid-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .chart-card {
+      background: linear-gradient(165deg, rgba(28, 35, 48, 0.9) 0%, rgba(15, 18, 24, 0.95) 100%);
+      border: 1px solid rgba(94, 234, 212, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.7s var(--ease-out) 0.2s backwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(94, 234, 212, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .chart-card:hover {
+      border-color: rgba(94, 234, 212, 0.28);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-3px);
+    }
+
+    .chart-card.wide { grid-column: 1 / -1; }
+
+    .chart-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chart-head h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .chart-head p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .chart-legend-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 260px;
+      z-index: 1;
+    }
+
+    .chart-wrap.tall { height: 280px; }
+    .chart-wrap.compact { height: 220px; }
+
+    /* Rankings */
+    .rank-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .rank-card {
+      background: linear-gradient(165deg, rgba(28, 35, 48, 0.9) 0%, rgba(15, 18, 24, 0.95) 100%);
+      border: 1px solid rgba(94, 234, 212, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.7s var(--ease-out) 0.35s backwards;
+    }
+
+    .rank-card:hover {
+      border-color: rgba(167, 139, 250, 0.3);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .rank-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .rank-card .sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .rank-list { list-style: none; }
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 12px;
+      margin-bottom: 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: all 0.35s var(--ease-out);
+      cursor: default;
+    }
+
+    .rank-item:hover {
+      background: rgba(94, 234, 212, 0.06);
+      border-color: rgba(94, 234, 212, 0.15);
+      transform: translateX(6px);
+      box-shadow: 0 4px 20px rgba(94, 234, 212, 0.08);
+    }
+
+    .rank-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
+    .rank-item:nth-child(1) .rank-num {
+      background: linear-gradient(135deg, var(--tiffany), var(--tiffany-deep));
+      color: var(--black);
+      box-shadow: 0 0 16px var(--tiffany-glow);
+    }
+
+    .rank-item:nth-child(2) .rank-num {
+      background: linear-gradient(135deg, var(--purple-bright), var(--purple));
+      color: var(--black);
+    }
+
+    .rank-item:nth-child(3) .rank-num {
+      background: rgba(94, 234, 212, 0.2);
+      color: var(--tiffany-bright);
+    }
+
+    .rank-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: var(--tiffany-soft);
+      border: 1px solid rgba(94, 234, 212, 0.2);
+      color: var(--tiffany);
+      flex-shrink: 0;
+    }
+
+    .rank-thumb.event {
+      background: var(--purple-soft);
+      border-color: rgba(167, 139, 250, 0.25);
+      color: var(--purple);
+    }
+
+    .rank-info { flex: 1; min-width: 0; }
+
+    .rank-name {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .rank-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; }
+
+    .rank-bar-wrap {
+      width: 72px;
+      flex-shrink: 0;
+    }
+
+    .rank-bar-track {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .rank-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--tiffany-deep), var(--tiffany-bright));
+      transition: width 1s var(--ease-out);
+    }
+
+    .rank-bar-fill.purple {
+      background: linear-gradient(90deg, #8b5cf6, var(--purple-bright));
+    }
+
+    .rank-pct {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--tiffany-bright);
+      text-align: right;
+    }
+
+    .rank-pct.purple { color: var(--purple-bright); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1400px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid-bottom,
+      .rank-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .content { padding: 20px 16px 40px; }
+      .header { padding: 0 16px; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .header-actions { gap: 8px; }
+      .period-select { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-bg" aria-hidden="true">
+    <div class="spotlight spotlight-main"></div>
+    <div class="spotlight spotlight-left"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a href="index.html" class="brand-mark">
+          <div class="brand-logo" aria-hidden="true"><span>舞</span></div>
+          <div class="brand-name">
+            <h1>舞韻舞蹈服飾 ERP</h1>
+            <p>舞蹈品牌營運平台</p>
+            <span class="brand-tagline">Wuyun Dance Costume</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-label">舞台導航</p>
+        <a href="index.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="order.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></span>
+          <span class="nav-text">訂單管理</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+          <span class="nav-text">庫存管理</span>
+        </a>
+        <a href="shipping.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          <span class="nav-text">出貨管理</span>
+        </a>
+        <a href="laundry.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg></span>
+          <span class="nav-text">洗滌管理</span>
+        </a>
+        <a href="analytics.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+          <span class="nav-text">報表分析</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">林</div>
+          <div class="user-meta">
+            <div class="name">林曉雯</div>
+            <div class="role">營運總監</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <nav class="breadcrumb">
+            <a href="index.html">Dashboard</a>
+            <span> / </span>
+            <strong>報表分析</strong>
+          </nav>
+        </div>
+        <div class="header-actions">
+          <select class="period-select" id="periodSelect" aria-label="報表期間">
+            <option value="2026-05">2026 年 5 月</option>
+            <option value="2026-04">2026 年 4 月</option>
+            <option value="2026-q1">2026 Q1</option>
+          </select>
+          <button type="button" class="btn-gold" id="btnExport">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            匯出報表
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="page-intro">
+          <h2>報表分析</h2>
+          <p>掌握訂單、營收與庫存趨勢，讓每一場登台都有數據撐腰</p>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/></svg>
+            </div>
+            <div class="kpi-label">本月訂單數</div>
+            <div class="kpi-value" data-count="186">0</div>
+            <span class="trend-badge up">↑ 12.4% 較上月</span>
+            <div class="kpi-hint">含學校成果展、舞賽批次</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-icon purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <div class="kpi-label">本月營收</div>
+            <div class="kpi-value" data-count="2846500" data-prefix="NT$ " data-format="money">0</div>
+            <span class="trend-badge up">↑ 8.7% 較上月</span>
+            <div class="kpi-hint down">平均客單 <em>NT$ 15,304</em></div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </div>
+            <div class="kpi-label">熱門服裝</div>
+            <div class="kpi-value sm">敦煌飛天舞服</div>
+            <div class="kpi-hint">本月出租 <em>47</em> 次 · 國風古典</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-icon purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="kpi-label">平均出租率</div>
+            <div class="kpi-value" data-count="78" data-suffix="%">0</div>
+            <span class="trend-badge up">↑ 3.2%</span>
+            <div class="kpi-hint">週末檔期接近滿租</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-icon warn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            </div>
+            <div class="kpi-label">延遲歸還率</div>
+            <div class="kpi-value" data-count="4.8" data-suffix="%" data-decimals="1">0</div>
+            <span class="trend-badge down">↓ 1.1% 較上月</span>
+            <div class="kpi-hint up-warn">主要為商演長檔期</div>
+          </article>
+        </div>
+
+        <div class="charts-grid">
+          <article class="chart-card wide">
+            <div class="chart-head">
+              <div>
+                <h3>每月訂單趨勢</h3>
+                <p>近 6 個月租借訂單量（含學校、舞團、商演）</p>
+              </div>
+              <span class="chart-legend-hint">單位：筆</span>
+            </div>
+            <div class="chart-wrap tall">
+              <canvas id="chartOrders"></canvas>
+            </div>
+          </article>
+        </div>
+
+        <div class="charts-grid-bottom">
+          <article class="chart-card">
+            <div class="chart-head">
+              <div>
+                <h3>熱門舞蹈類型</h3>
+                <p>依本月訂單服裝類型分布</p>
+              </div>
+            </div>
+            <div class="chart-wrap compact">
+              <canvas id="chartTypes"></canvas>
+            </div>
+          </article>
+          <article class="chart-card">
+            <div class="chart-head">
+              <div>
+                <h3>庫存使用率</h3>
+                <p>熱門款式可租庫存占用比例</p>
+              </div>
+            </div>
+            <div class="chart-wrap compact">
+              <canvas id="chartInventory"></canvas>
+            </div>
+          </article>
+        </div>
+
+        <article class="chart-card" style="margin-bottom: 28px;">
+          <div class="chart-head">
+            <div>
+              <h3>出貨與歸還趨勢</h3>
+              <p>近 8 週物流件數（出貨 vs 歸還）</p>
+            </div>
+            <span class="chart-legend-hint">出貨 · 歸還</span>
+          </div>
+          <div class="chart-wrap tall">
+            <canvas id="chartShipReturn"></canvas>
+          </div>
+        </article>
+
+        <div class="rank-grid">
+          <section class="rank-card">
+            <h3>熱門服裝排行榜</h3>
+            <p class="sub">依本月出租次數排序</p>
+            <ul class="rank-list" id="rankCostumes"></ul>
+          </section>
+          <section class="rank-card">
+            <h3>熱門活動類型</h3>
+            <p class="sub">依訂單活動性質分布</p>
+            <ul class="rank-list" id="rankEvents"></ul>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const CHART_COLORS = {
+      tiffany: 'rgba(94, 234, 212, 1)',
+      tiffanySoft: 'rgba(94, 234, 212, 0.25)',
+      tiffanyFill: 'rgba(94, 234, 212, 0.15)',
+      purple: 'rgba(196, 181, 253, 1)',
+      purpleSoft: 'rgba(167, 139, 250, 0.25)',
+      purpleFill: 'rgba(167, 139, 250, 0.2)',
+      grid: 'rgba(255, 255, 255, 0.06)',
+      text: '#94a3b8',
+      palette: [
+        'rgba(94, 234, 212, 0.9)',
+        'rgba(167, 139, 250, 0.9)',
+        'rgba(125, 211, 252, 0.9)',
+        'rgba(252, 211, 77, 0.9)',
+        'rgba(251, 113, 133, 0.85)',
+        'rgba(110, 231, 183, 0.9)',
+      ],
+    };
+
+    Chart.defaults.color = CHART_COLORS.text;
+    Chart.defaults.borderColor = CHART_COLORS.grid;
+    Chart.defaults.font.family = "'Noto Sans TC', sans-serif";
+
+    const popularCostumes = [
+      { name: '敦煌飛天舞服', meta: '出租 47 次 · 國風古典', pct: 100, initial: '敦' },
+      { name: '客家花布舞裙', meta: '出租 38 次 · 民族舞', pct: 81, initial: '客' },
+      { name: '原民羽飾套裝', meta: '出租 35 次 · 原民舞', pct: 74, initial: '原' },
+      { name: '國風水袖服', meta: '出租 31 次 · 學校成果展', pct: 66, initial: '國' },
+      { name: '現代黑金流蘇服', meta: '出租 28 次 · 現代舞', pct: 60, initial: '現' },
+      { name: '兒童芭蕾粉 Tutu', meta: '出租 24 次 · 兒童班', pct: 51, initial: '童' },
+    ];
+
+    const popularEvents = [
+      { name: '學校成果展', meta: '62 筆訂單 · 5 月旺季', pct: 100, initial: '學' },
+      { name: '舞蹈比賽', meta: '48 筆訂單 · 全國賽前', pct: 77, initial: '賽' },
+      { name: '商演活動', meta: '35 筆訂單 · 商業巡演', pct: 56, initial: '商' },
+      { name: '春節晚會', meta: '22 筆訂單 · 節慶檔期', pct: 35, initial: '春' },
+      { name: '社區公演', meta: '18 筆訂單 · 地方文化', pct: 29, initial: '社' },
+      { name: '畢業公演', meta: '15 筆訂單 · 大專舞集', pct: 24, initial: '畢' },
+    ];
+
+    function renderRankList(containerId, items, barClass = '') {
+      const el = document.getElementById(containerId);
+      el.innerHTML = items.map((item, i) => `
+        <li class="rank-item">
+          <span class="rank-num">${i + 1}</span>
+          <div class="rank-thumb ${barClass === 'purple' ? 'event' : ''}">${item.initial}</div>
+          <div class="rank-info">
+            <div class="rank-name">${item.name}</div>
+            <div class="rank-meta">${item.meta}</div>
+          </div>
+          <div class="rank-bar-wrap">
+            <div class="rank-bar-track">
+              <div class="rank-bar-fill ${barClass}" style="width:0" data-width="${item.pct}"></div>
+            </div>
+            <div class="rank-pct ${barClass}">${item.pct}%</div>
+          </div>
+        </li>
+      `).join('');
+
+      requestAnimationFrame(() => {
+        el.querySelectorAll('.rank-bar-fill').forEach(bar => {
+          bar.style.width = bar.dataset.width + '%';
+        });
+      });
+    }
+
+    function animateKpis() {
+      document.querySelectorAll('[data-count]').forEach(el => {
+        const target = parseFloat(el.dataset.count);
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        const decimals = parseInt(el.dataset.decimals || '0', 10);
+        const isMoney = el.dataset.format === 'money';
+        const duration = 1200;
+        const start = performance.now();
+
+        function tick(now) {
+          const p = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          let val = target * eased;
+          if (isMoney) {
+            el.textContent = prefix + Math.round(val).toLocaleString('zh-TW');
+          } else {
+            el.textContent = prefix + val.toFixed(decimals) + suffix;
+          }
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function createGradient(ctx, c1, c2) {
+      const g = ctx.createLinearGradient(0, 0, 0, 280);
+      g.addColorStop(0, c1);
+      g.addColorStop(1, c2);
+      return g;
+    }
+
+    function initCharts() {
+      const ordersCtx = document.getElementById('chartOrders').getContext('2d');
+      const ordersGrad = createGradient(ordersCtx, 'rgba(94, 234, 212, 0.35)', 'rgba(94, 234, 212, 0.02)');
+
+      new Chart(ordersCtx, {
+        type: 'line',
+        data: {
+          labels: ['12 月', '1 月', '2 月', '3 月', '4 月', '5 月'],
+          datasets: [{
+            label: '訂單數',
+            data: [128, 142, 118, 156, 165, 186],
+            borderColor: CHART_COLORS.tiffany,
+            backgroundColor: ordersGrad,
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointBackgroundColor: CHART_COLORS.tiffany,
+            pointBorderColor: '#0a0c10',
+            pointBorderWidth: 2,
+            pointHoverBackgroundColor: '#fff',
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15, 18, 24, 0.95)',
+              borderColor: 'rgba(94, 234, 212, 0.3)',
+              borderWidth: 1,
+              padding: 12,
+              titleColor: '#f1f5f9',
+              bodyColor: '#99f6e4',
+            },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { padding: 8 } },
+            y: {
+              beginAtZero: true,
+              grid: { color: CHART_COLORS.grid },
+              ticks: { padding: 8 },
+            },
+          },
+        },
+      });
+
+      new Chart(document.getElementById('chartTypes'), {
+        type: 'doughnut',
+        data: {
+          labels: ['民族舞', '原民舞', '現代舞', '國風古典', '街舞', '芭蕾'],
+          datasets: [{
+            data: [22, 18, 16, 20, 12, 12],
+            backgroundColor: CHART_COLORS.palette,
+            borderColor: '#151a22',
+            borderWidth: 3,
+            hoverOffset: 12,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '62%',
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { padding: 14, usePointStyle: true, pointStyleWidth: 8 },
+            },
+            tooltip: {
+              backgroundColor: 'rgba(15, 18, 24, 0.95)',
+              borderColor: 'rgba(167, 139, 250, 0.35)',
+              borderWidth: 1,
+            },
+          },
+        },
+      });
+
+      new Chart(document.getElementById('chartInventory'), {
+        type: 'bar',
+        data: {
+          labels: ['敦煌飛天', '客家花布', '原民羽飾', '國風水袖', '黑金流蘇', '街舞套裝'],
+          datasets: [{
+            label: '使用率 %',
+            data: [92, 85, 78, 74, 68, 61],
+            backgroundColor: (ctx) => {
+              const chart = ctx.chart;
+              const { ctx: c, chartArea } = chart;
+              if (!chartArea) return CHART_COLORS.tiffany;
+              const g = c.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+              g.addColorStop(0, 'rgba(20, 184, 166, 0.9)');
+              g.addColorStop(1, 'rgba(153, 246, 228, 0.95)');
+              return g;
+            },
+            borderRadius: 8,
+            borderSkipped: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              max: 100,
+              grid: { color: CHART_COLORS.grid },
+              ticks: { callback: v => v + '%' },
+            },
+            y: { grid: { display: false } },
+          },
+        },
+      });
+
+      const shipCtx = document.getElementById('chartShipReturn').getContext('2d');
+      const shipGrad = createGradient(shipCtx, 'rgba(94, 234, 212, 0.35)', 'rgba(94, 234, 212, 0.02)');
+      const retGrad = createGradient(shipCtx, 'rgba(167, 139, 250, 0.3)', 'rgba(167, 139, 250, 0.02)');
+
+      new Chart(shipCtx, {
+        type: 'line',
+        data: {
+          labels: ['第 1 週', '第 2 週', '第 3 週', '第 4 週', '第 5 週', '第 6 週', '第 7 週', '第 8 週'],
+          datasets: [
+            {
+              label: '出貨',
+              data: [42, 48, 45, 52, 58, 54, 61, 56],
+              borderColor: CHART_COLORS.tiffany,
+              backgroundColor: shipGrad,
+              fill: true,
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+            },
+            {
+              label: '歸還',
+              data: [38, 44, 41, 49, 51, 48, 55, 52],
+              borderColor: CHART_COLORS.purple,
+              backgroundColor: retGrad,
+              fill: true,
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'top',
+              align: 'end',
+              labels: { usePointStyle: true, padding: 16 },
+            },
+            tooltip: {
+              backgroundColor: 'rgba(15, 18, 24, 0.95)',
+              borderColor: 'rgba(94, 234, 212, 0.25)',
+              borderWidth: 1,
+            },
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, grid: { color: CHART_COLORS.grid } },
+          },
+        },
+      });
+    }
+
+    function initSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const close = () => {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+      };
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay?.addEventListener('click', close);
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) close();
+        });
+      });
+    }
+
+    document.getElementById('btnExport')?.addEventListener('click', () => {
+      alert('報表匯出功能（示範）：將產生 2026 年 5 月營運分析 PDF');
+    });
+
+    renderRankList('rankCostumes', popularCostumes);
+    renderRankList('rankEvents', popularEvents, 'purple');
+    initCharts();
+    animateKpis();
+    initSidebar();
+  </script>
+</body>
+</html>

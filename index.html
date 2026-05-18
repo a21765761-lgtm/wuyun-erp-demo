@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>舞韻舞蹈服飾 ERP · Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <style>
+    :root {
+      --black: #0a0c10;
+      --black-soft: #0f1218;
+      --gray-deep: #151a22;
+      --gray: #1c2330;
+      --gray-mid: #283040;
+      --gray-light: #3d4a5c;
+      --tiffany: #5eead4;
+      --tiffany-bright: #99f6e4;
+      --tiffany-dark: #2dd4bf;
+      --tiffany-deep: #14b8a6;
+      --tiffany-glow: rgba(94, 234, 212, 0.45);
+      --tiffany-soft: rgba(94, 234, 212, 0.14);
+      --purple: #c4b5fd;
+      --purple-bright: #ddd6fe;
+      --purple-soft: rgba(167, 139, 250, 0.18);
+      --purple-glow: rgba(167, 139, 250, 0.35);
+      --white: #ffffff;
+      --gold: var(--tiffany);
+      --gold-light: var(--tiffany-bright);
+      --gold-dim: var(--tiffany-deep);
+      --gold-glow: var(--tiffany-glow);
+      --gold-soft: var(--tiffany-soft);
+      --cream: #f8fafc;
+      --text: #f1f5f9;
+      --text-soft: #94a3b8;
+      --text-muted: #64748b;
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.15);
+      --warn: #fcd34d;
+      --sidebar-w: 260px;
+      --header-h: 76px;
+      --radius-lg: 22px;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --shadow-card: 0 4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 234, 212, 0.08);
+      --shadow-hover: 0 16px 56px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(94, 234, 212, 0.2), 0 0 48px rgba(94, 234, 212, 0.12), 0 0 80px rgba(167, 139, 250, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-size: 15px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, sans-serif;
+      font-weight: 400;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Stage lighting background ── */
+    .stage-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .stage-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #0c0c0e 0%, var(--black) 35%, #0a0a0c 100%);
+    }
+
+    .spotlight {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      animation: spotlightPulse 8s ease-in-out infinite;
+    }
+
+    .spotlight-main {
+      width: 70vw;
+      max-width: 900px;
+      height: 50vh;
+      top: -15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(94, 234, 212, 0.22) 0%, rgba(167, 139, 250, 0.08) 45%, transparent 70%);
+      animation-delay: 0s;
+    }
+
+    .spotlight-left {
+      width: 400px;
+      height: 400px;
+      bottom: 10%;
+      left: -5%;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.08) 0%, transparent 70%);
+      animation-delay: -2s;
+    }
+
+    .spotlight-right {
+      width: 350px;
+      height: 350px;
+      top: 30%;
+      right: -8%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+      animation-delay: -4s;
+    }
+
+    .stage-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 40%, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
+    }
+
+    .stage-floor {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(0deg, rgba(94, 234, 212, 0.06) 0%, rgba(167, 139, 250, 0.03) 50%, transparent 100%);
+    }
+
+    @keyframes spotlightPulse {
+      0%, 100% { opacity: 0.85; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    .spotlight-left,
+    .spotlight-right {
+      animation-name: spotlightPulseSide;
+    }
+
+    @keyframes spotlightPulseSide {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+    }
+
+    .sidebar-overlay.open { display: block; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, rgba(12, 12, 14, 0.95) 0%, rgba(8, 8, 10, 0.98) 100%);
+      border-right: 1px solid rgba(94, 234, 212, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .sidebar-brand {
+      padding: 28px 22px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      transition: opacity 0.3s var(--ease);
+    }
+
+    .brand-mark:hover { opacity: 0.9; }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, var(--gold-light) 0%, var(--gold-dim) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px var(--gold-glow);
+    }
+
+    .brand-logo span {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .brand-name h1 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.12em;
+      line-height: 1.3;
+    }
+
+    .brand-name p {
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 20px 14px;
+      overflow-y: auto;
+    }
+
+    .nav-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      padding: 4px 12px 14px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-soft);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 400;
+      cursor: pointer;
+      text-align: left;
+      text-decoration: none;
+      transition:
+        background 0.35s var(--ease-out),
+        color 0.25s var(--ease),
+        transform 0.35s var(--ease-out),
+        box-shadow 0.35s var(--ease-out),
+        border-color 0.35s var(--ease);
+      position: relative;
+    }
+
+    .nav-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.35s var(--ease-out), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+    }
+
+    .nav-icon svg {
+      width: 17px;
+      height: 17px;
+      opacity: 0.65;
+      stroke-width: 1.5;
+      transition: opacity 0.25s var(--ease), transform 0.35s var(--ease-out);
+    }
+
+    .nav-text { flex: 1; letter-spacing: 0.02em; }
+
+    .nav-item:hover {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.06);
+      transform: translateX(4px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-item:hover .nav-icon {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(94, 234, 212, 0.15);
+    }
+
+    .nav-item:hover .nav-icon svg {
+      opacity: 0.95;
+      transform: scale(1.05);
+    }
+
+    .nav-item.active {
+      color: var(--gold-light);
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.2) 0%, rgba(94, 234, 212, 0.06) 100%);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.12), 0 8px 32px rgba(94, 234, 212, 0.15);
+      transform: translateX(0);
+    }
+
+    .nav-item.active .nav-icon {
+      background: rgba(94, 234, 212, 0.22);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    .nav-item.active .nav-icon svg {
+      opacity: 1;
+      color: var(--gold-light);
+    }
+
+    .nav-item.active .nav-text { font-weight: 500; }
+
+    .sidebar-footer {
+      padding: 16px 14px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(94, 234, 212, 0.08);
+      transition: all 0.3s var(--ease);
+    }
+
+    .user-pill:hover {
+      border-color: rgba(94, 234, 212, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--gray-mid), var(--gray-deep));
+      border: 1px solid rgba(94, 234, 212, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.9rem;
+      color: var(--gold-light);
+    }
+
+    .user-meta .name { font-size: 0.85rem; font-weight: 500; color: var(--text); }
+    .user-meta .role { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      height: var(--header-h);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(8, 8, 10, 0.6);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .greeting {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--cream);
+    }
+
+    .greeting span { color: var(--gold); }
+
+    .header-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      width: 260px;
+      transition: all 0.3s var(--ease);
+    }
+
+    .search-wrap:focus-within {
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.1);
+    }
+
+    .search-wrap input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .search-wrap input::placeholder { color: var(--text-muted); }
+    .search-wrap svg { width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0; }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      color: var(--gold-light);
+      border-color: rgba(94, 234, 212, 0.3);
+      transform: scale(1.05);
+    }
+
+    .icon-btn .dot {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 7px;
+      height: 7px;
+      background: var(--gold);
+      border-radius: 50%;
+      border: 2px solid var(--black);
+    }
+
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dim) 100%);
+      color: var(--black);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--gold-glow);
+      transition: all 0.35s var(--ease-out);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--gold-glow);
+    }
+
+    .btn-gold svg { width: 16px; height: 16px; }
+
+    /* ── Content ── */
+    .content {
+      padding: 36px 40px 48px;
+      flex: 1;
+    }
+
+    .page-intro {
+      margin-bottom: 36px;
+      animation: fadeUp 0.7s var(--ease-out) backwards;
+    }
+
+    .page-intro h2 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: var(--cream);
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .page-intro p {
+      font-size: 0.9rem;
+      color: var(--text-soft);
+      font-weight: 300;
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(160deg, rgba(34, 34, 40, 0.9) 0%, rgba(22, 22, 28, 0.95) 100%);
+      border: 1px solid rgba(94, 234, 212, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 24px 22px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.7s var(--ease-out) backwards;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.4), transparent);
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(94, 234, 212, 0.25);
+    }
+
+    .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      font-weight: 400;
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-value {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 2.5rem;
+      font-weight: 500;
+      color: var(--cream);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-value.updating {
+      animation: countGlow 0.4s ease;
+    }
+
+    .kpi-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .kpi-hint em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    /* ── Panels ── */
+    .panels-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: linear-gradient(165deg, rgba(30, 30, 36, 0.85) 0%, rgba(18, 18, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.8s var(--ease-out) 0.3s backwards;
+    }
+
+    .panel:hover {
+      border-color: rgba(94, 234, 212, 0.15);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .panel-head h3 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+    }
+
+    .panel-more {
+      font-size: 0.78rem;
+      color: var(--gold);
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 0.25s var(--ease);
+    }
+
+    .panel-more:hover { opacity: 1; }
+
+    .panel-body { padding: 8px 0 12px; }
+
+    /* ── List rows (brand-style, not ERP table) ── */
+    .list-row {
+      display: grid;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s var(--ease);
+      cursor: default;
+    }
+
+    .list-row:last-child { border-bottom: none; }
+
+    .list-row:hover {
+      background: rgba(94, 234, 212, 0.04);
+      padding-left: 28px;
+    }
+
+    .list-row.orders { grid-template-columns: 1fr 1.2fr 1fr auto; }
+    .list-row.stock { grid-template-columns: 1.5fr 1fr auto; }
+    .list-row.ship { grid-template-columns: 72px 1fr 1.2fr; }
+
+    .row-id {
+      font-size: 0.78rem;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+    }
+
+    .row-primary { font-size: 0.88rem; color: var(--text); font-weight: 500; }
+    .row-secondary { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    .row-tag {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .row-tag.pending { background: rgba(212, 184, 122, 0.15); color: var(--warn); }
+    .row-tag.shipping { background: var(--gold-soft); color: var(--gold-light); }
+    .row-tag.rented { background: rgba(255, 255, 255, 0.06); color: var(--text-soft); }
+    .row-tag.returned { background: rgba(255, 255, 255, 0.04); color: var(--text-muted); }
+    .row-tag.critical { background: var(--danger-soft); color: var(--danger); }
+    .row-tag.warning { background: rgba(212, 184, 122, 0.1); color: var(--warn); }
+
+    .row-amount {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      text-align: right;
+    }
+
+    .row-time {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1rem;
+      color: var(--gold-light);
+    }
+
+    .stock-meter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stock-track {
+      flex: 1;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .stock-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      transition: width 0.8s var(--ease-out);
+    }
+
+    .stock-fill.low { background: linear-gradient(90deg, #8b5a4a, var(--danger)); }
+
+    .stock-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 44px;
+      text-align: right;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .item-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(94, 234, 212, 0.1);
+      border: 1px solid rgba(94, 234, 212, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.85rem;
+      color: var(--gold);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes countGlow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; text-shadow: 0 0 20px var(--gold-glow); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1400px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .panels-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .search-wrap { width: 200px; }
+      .content { padding: 28px 24px; }
+      .header { padding: 0 24px; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .search-wrap { display: none; }
+      .greeting { font-size: 0.95rem; }
+      .list-row.orders { grid-template-columns: 1fr 1fr; }
+      .list-row.orders .row-amount { grid-column: 1 / -1; text-align: left; margin-top: 4px; }
+      .list-row.ship { grid-template-columns: 60px 1fr; }
+      .list-row.ship .row-primary { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-bg" aria-hidden="true">
+    <div class="spotlight spotlight-main"></div>
+    <div class="spotlight spotlight-left"></div>
+    <div class="spotlight spotlight-right"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+    <div class="stage-floor"></div>
+  </div>
+
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a href="index.html" class="brand-mark">
+          <div class="brand-logo" aria-hidden="true"><span>舞</span></div>
+          <div class="brand-name">
+            <h1>舞韻舞蹈服飾 ERP</h1>
+            <p>舞蹈品牌營運平台</p>
+            <span class="brand-tagline">Wuyun Dance Costume</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-label">舞台導航</p>
+        <a href="index.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="order.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></span>
+          <span class="nav-text">訂單管理</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+          <span class="nav-text">庫存管理</span>
+        </a>
+        <a href="shipping.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          <span class="nav-text">出貨管理</span>
+        </a>
+        <a href="laundry.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg></span>
+          <span class="nav-text">洗滌管理</span>
+        </a>
+        <a href="analytics.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+          <span class="nav-text">報表分析</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">林</div>
+          <div class="user-meta">
+            <div class="name">林曉雯</div>
+            <div class="role">營運總監</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="greeting">午安，<span>曉雯</span></div>
+            <div class="header-date" id="headerDate"></div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4-35-4.35"/></svg>
+            <input type="search" placeholder="搜尋訂單、款式、客戶…" />
+          </div>
+          <button class="icon-btn" type="button" aria-label="通知">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="dot"></span>
+          </button>
+          <button class="btn-gold" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            建立訂單
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="page-intro">
+          <h2>今日舞台概況</h2>
+          <p>即時掌握出貨、洗滌與庫存，讓每一套表演服準時登台</p>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-label">今日待出貨</div>
+            <div class="kpi-value" data-target="6">0</div>
+            <div class="kpi-hint"><em>2</em> 筆出貨檔期衝突待調</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">今日待修改</div>
+            <div class="kpi-value" data-target="4">0</div>
+            <div class="kpi-hint">民族舞、原民舞尺寸調整</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">洗滌中</div>
+            <div class="kpi-value" data-target="42">0</div>
+            <div class="kpi-hint">含民族舞、街舞批次 <em>14</em> 件</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">庫存不足</div>
+            <div class="kpi-value" data-target="6">0</div>
+            <div class="kpi-hint"><em>3</em> 款配件／尺寸不足</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">今日歸位</div>
+            <div class="kpi-value" data-target="15">0</div>
+            <div class="kpi-hint">已檢查上架 <em>11</em> 件</div>
+          </article>
+        </div>
+
+        <div class="panels-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>最近訂單</h3>
+              <a href="order.html" class="panel-more">查看全部</a>
+            </div>
+            <div class="panel-body" id="ordersList"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h3>庫存不足警示</h3>
+              <a href="inventory.html" class="panel-more">庫存管理</a>
+            </div>
+            <div class="panel-body" id="stockList"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h3>今日出貨排程</h3>
+              <a href="shipping.html" class="panel-more">出貨管理</a>
+            </div>
+            <div class="panel-body" id="shippingList"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const orders = [
+      { id: 'WY-260518-001', customer: '嘉義女中舞蹈班', sub: '林佩蓉老師', items: '國風水袖服 × 18', status: 'shipping', statusText: '今日出貨', amount: 'NT$ 28,800' },
+      { id: 'WY-260518-002', customer: '台南民族舞團', sub: '陳雅惠', items: '客家花布舞裙 × 14', status: 'pending', statusText: '待確認', amount: 'NT$ 19,600' },
+      { id: 'WY-260518-003', customer: '星光兒童舞蹈教室', sub: '黃怡君', items: '兒童芭蕾粉 Tutu × 22', status: 'shipping', statusText: '備貨中', amount: 'NT$ 22,000' },
+      { id: 'WY-260517-016', customer: '屏東原舞團', sub: '排灣族舞監', items: '原民羽飾套裝 × 10', status: 'rented', statusText: '表演中', amount: 'NT$ 16,500' },
+      { id: 'WY-260516-017', customer: '雲林表演藝術中心', sub: '展演組', items: '敦煌飛天舞服 × 9', status: 'returned', statusText: '已歸還', amount: 'NT$ 14,400' },
+    ];
+
+    const stockAlerts = [
+      { name: '原民羽飾套裝', stock: 2, safe: 12, level: 'critical' },
+      { name: '國風水袖服 M', stock: 3, safe: 15, level: 'critical' },
+      { name: '敦煌飛天舞服', stock: 5, safe: 14, level: 'warning' },
+      { name: '街舞寬鬆套裝 L', stock: 6, safe: 18, level: 'warning' },
+    ];
+
+    const shippingSchedule = [
+      { time: '09:00', order: 'WY-260518-001', item: '國風水袖服 × 18', customer: '嘉義女中舞蹈班' },
+      { time: '09:30', order: 'WY-260518-002', item: '客家花布舞裙 × 14', customer: '台南民族舞團 · 檔期衝突' },
+      { time: '11:00', order: 'WY-260518-016', item: '街舞寬鬆套裝 × 12', customer: '台南女中街舞社' },
+      { time: '14:00', order: 'WY-260518-005', item: '現代黑金流蘇服 × 12', customer: '高雄青春舞團' },
+      { time: '16:30', order: 'WY-260518-003', item: '兒童芭蕾粉 Tutu × 22', customer: '星光兒童舞蹈教室' },
+    ];
+
+    function renderOrders() {
+      document.getElementById('ordersList').innerHTML = orders.map(o => `
+        <div class="list-row orders">
+          <div>
+            <div class="row-id">${o.id}</div>
+          </div>
+          <div>
+            <div class="row-primary">${o.customer}</div>
+            <div class="row-secondary">${o.sub}</div>
+          </div>
+          <div class="row-primary" style="font-weight:400;color:var(--text-soft)">${o.items}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <span class="row-tag ${o.status}">${o.statusText}</span>
+            <span class="row-amount">${o.amount}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStock() {
+      document.getElementById('stockList').innerHTML = stockAlerts.map(s => {
+        const pct = Math.min(100, Math.round((s.stock / s.safe) * 100));
+        const tag = s.level === 'critical' ? 'critical' : 'warning';
+        const text = s.level === 'critical' ? '急需補貨' : '庫存偏低';
+        return `
+          <div class="list-row stock">
+            <div class="item-row">
+              <div class="item-icon">${s.name.slice(0, 1)}</div>
+              <div>
+                <div class="row-primary">${s.name}</div>
+              </div>
+            </div>
+            <div class="stock-meter">
+              <div class="stock-track">
+                <div class="stock-fill ${s.level === 'critical' ? 'low' : ''}" style="width:${pct}%"></div>
+              </div>
+              <span class="stock-count">${s.stock} / ${s.safe}</span>
+            </div>
+            <span class="row-tag ${tag}">${text}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderShipping() {
+      document.getElementById('shippingList').innerHTML = shippingSchedule.map(s => `
+        <div class="list-row ship">
+          <div class="row-time">${s.time}</div>
+          <div>
+            <div class="row-id">${s.order}</div>
+            <div class="row-secondary">${s.customer}</div>
+          </div>
+          <div class="row-primary" style="font-weight:400;color:var(--text-soft)">${s.item}</div>
+        </div>
+      `).join('');
+    }
+
+    function animateValue(el, target, duration = 1400) {
+      const start = 0;
+      const t0 = performance.now();
+      function tick(now) {
+        const p = Math.min((now - t0) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(start + (target - start) * eased);
+        if (p < 1) requestAnimationFrame(tick);
+        else el.classList.remove('updating');
+      }
+      el.classList.add('updating');
+      requestAnimationFrame(tick);
+    }
+
+    function initCounters() {
+      document.querySelectorAll('.kpi-value[data-target]').forEach(el => {
+        animateValue(el, parseInt(el.dataset.target, 10));
+      });
+    }
+
+    function updateDate() {
+      const now = new Date();
+      const opts = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      document.getElementById('headerDate').textContent = now.toLocaleDateString('zh-TW', opts);
+    }
+
+    function initSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const close = () => {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+      };
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay?.addEventListener('click', close);
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) close();
+        });
+      });
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href').toLowerCase() === current);
+      });
+    }
+
+    renderOrders();
+    renderStock();
+    renderShipping();
+    updateDate();
+    initCounters();
+    initSidebar();
+  </script>
+</body>
+</html>

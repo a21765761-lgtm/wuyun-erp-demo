@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>舞韻舞蹈服飾 ERP · 洗滌管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <style>
+    :root {
+      --black: #0a0c10;
+      --gray-deep: #151a22;
+      --gray-mid: #283040;
+      --tiffany: #5eead4;
+      --tiffany-bright: #99f6e4;
+      --tiffany-deep: #14b8a6;
+      --tiffany-glow: rgba(94, 234, 212, 0.45);
+      --tiffany-soft: rgba(94, 234, 212, 0.14);
+      --purple: #c4b5fd;
+      --purple-bright: #ddd6fe;
+      --purple-soft: rgba(167, 139, 250, 0.18);
+      --purple-glow: rgba(167, 139, 250, 0.35);
+      --white: #ffffff;
+      --gold: var(--tiffany);
+      --gold-light: var(--tiffany-bright);
+      --gold-dim: var(--tiffany-deep);
+      --gold-glow: var(--tiffany-glow);
+      --gold-soft: var(--tiffany-soft);
+      --cream: #f8fafc;
+      --text: #f1f5f9;
+      --text-soft: #94a3b8;
+      --text-muted: #64748b;
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.15);
+      --danger-glow: rgba(251, 113, 133, 0.3);
+      --info: #7dd3fc;
+      --info-soft: rgba(125, 211, 252, 0.14);
+      --success: #6ee7b7;
+      --success-soft: rgba(110, 231, 183, 0.14);
+      --cyan: var(--tiffany);
+      --cyan-soft: var(--tiffany-soft);
+      --sidebar-w: 260px;
+      --header-h: 76px;
+      --radius-lg: 22px;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --shadow-card: 0 4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 234, 212, 0.08);
+      --shadow-hover: 0 16px 56px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(94, 234, 212, 0.2), 0 0 48px rgba(94, 234, 212, 0.12), 0 0 80px rgba(167, 139, 250, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 15px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .stage-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .stage-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #0c0c0e 0%, var(--black) 40%, #0a0a0c 100%);
+    }
+
+    .spotlight-main {
+      position: absolute;
+      width: 65vw;
+      max-width: 800px;
+      height: 45vh;
+      top: -12%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      filter: blur(90px);
+      background: radial-gradient(ellipse, rgba(94, 234, 212, 0.22) 0%, rgba(167, 139, 250, 0.1) 45%, transparent 70%);
+      animation: pulseBg 10s ease-in-out infinite;
+    }
+
+    .stage-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 30%, transparent 28%, rgba(0, 0, 0, 0.72) 100%);
+    }
+
+    @keyframes pulseBg {
+      0%, 100% { opacity: 0.8; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+    }
+
+    .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+    }
+
+    .sidebar-overlay.open { display: block; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, rgba(12, 12, 14, 0.95) 0%, rgba(8, 8, 10, 0.98) 100%);
+      border-right: 1px solid rgba(94, 234, 212, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .sidebar-brand {
+      padding: 28px 22px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, var(--gold-light) 0%, var(--gold-dim) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px var(--gold-glow);
+    }
+
+    .brand-logo span {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .brand-name h1 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.12em;
+    }
+
+    .brand-name p {
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 20px 14px; overflow-y: auto; }
+
+    .nav-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      padding: 4px 12px 14px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-soft);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 400;
+      cursor: pointer;
+      text-align: left;
+      text-decoration: none;
+      transition:
+        background 0.35s var(--ease-out),
+        color 0.25s var(--ease),
+        transform 0.35s var(--ease-out),
+        box-shadow 0.35s var(--ease-out),
+        border-color 0.35s var(--ease);
+      position: relative;
+    }
+
+    .nav-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.35s var(--ease-out), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+    }
+
+    .nav-icon svg {
+      width: 17px;
+      height: 17px;
+      opacity: 0.65;
+      stroke-width: 1.5;
+      transition: opacity 0.25s var(--ease), transform 0.35s var(--ease-out);
+    }
+
+    .nav-text { flex: 1; letter-spacing: 0.02em; }
+
+    .nav-item:hover {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.06);
+      transform: translateX(4px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-item:hover .nav-icon {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(94, 234, 212, 0.15);
+    }
+
+    .nav-item:hover .nav-icon svg {
+      opacity: 0.95;
+      transform: scale(1.05);
+    }
+
+    .nav-item.active {
+      color: var(--gold-light);
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.2) 0%, rgba(94, 234, 212, 0.06) 100%);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.12), 0 8px 32px rgba(94, 234, 212, 0.15);
+      transform: translateX(0);
+    }
+
+    .nav-item.active .nav-icon {
+      background: rgba(94, 234, 212, 0.22);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    .nav-item.active .nav-icon svg {
+      opacity: 1;
+      color: var(--gold-light);
+    }
+
+    .nav-item.active .nav-text { font-weight: 500; }
+
+    .sidebar-footer {
+      padding: 16px 14px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(94, 234, 212, 0.08);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--gray-mid), var(--gray-deep));
+      border: 1px solid rgba(94, 234, 212, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      color: var(--gold-light);
+    }
+
+    .user-meta .name { font-size: 0.85rem; font-weight: 500; }
+    .user-meta .role { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      height: var(--header-h);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(8, 8, 10, 0.6);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 20px; }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .breadcrumb { font-size: 0.8rem; color: var(--text-muted); }
+    .breadcrumb a { color: var(--text-soft); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--gold); }
+    .breadcrumb strong { color: var(--cream); font-weight: 500; }
+
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dim) 100%);
+      color: var(--black);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--gold-glow);
+      transition: all 0.35s var(--ease-out);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--gold-glow);
+    }
+
+    .content { padding: 32px 40px 56px; flex: 1; }
+
+    .page-intro {
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s var(--ease-out) backwards;
+    }
+
+    .page-intro h2 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.85rem;
+      font-weight: 500;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .page-intro p { font-size: 0.88rem; color: var(--text-soft); font-weight: 300; }
+
+    /* KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(160deg, rgba(34, 34, 40, 0.92) 0%, rgba(22, 22, 28, 0.96) 100%);
+      border: 1px solid rgba(94, 234, 212, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.65s var(--ease-out) backwards;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .kpi-card:nth-child(1) { animation-delay: 0.04s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.08s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.12s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.16s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.2s; }
+
+    .kpi-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; }
+
+    .kpi-value {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 2.1rem;
+      font-weight: 500;
+      color: var(--cream);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-value.gold { color: var(--gold-light); }
+    .kpi-value.cyan { color: var(--cyan); }
+    .kpi-value.success { color: var(--success); }
+
+    /* Workflow pipeline */
+    .workflow-section {
+      margin-bottom: 32px;
+      animation: fadeUp 0.7s var(--ease-out) 0.1s backwards;
+    }
+
+    .workflow-section h3 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.1rem;
+      color: var(--cream);
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    .workflow-track {
+      position: relative;
+      padding: 24px 0 8px;
+    }
+
+    .workflow-line {
+      position: absolute;
+      top: 52px;
+      left: 6%;
+      right: 6%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .workflow-line-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold), var(--cyan));
+      border-radius: 99px;
+      animation: flowLine 2.5s var(--ease-out) 0.4s forwards;
+    }
+
+    @keyframes flowLine {
+      to { width: 100%; }
+    }
+
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .flow-step {
+      background: linear-gradient(165deg, rgba(32, 32, 38, 0.95) 0%, rgba(20, 20, 24, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.35s var(--ease-out);
+      box-shadow: var(--shadow-card);
+      animation: stepIn 0.5s var(--ease-out) backwards;
+    }
+
+    .flow-step:nth-child(1) { animation-delay: 0.15s; }
+    .flow-step:nth-child(2) { animation-delay: 0.22s; }
+    .flow-step:nth-child(3) { animation-delay: 0.29s; }
+    .flow-step:nth-child(4) { animation-delay: 0.36s; }
+    .flow-step:nth-child(5) { animation-delay: 0.43s; }
+    .flow-step:nth-child(6) { animation-delay: 0.5s; }
+    .flow-step:nth-child(7) { animation-delay: 0.57s; }
+
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .flow-step:hover {
+      transform: translateY(-6px);
+      border-color: rgba(94, 234, 212, 0.25);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .flow-step.active {
+      border-color: rgba(94, 234, 212, 0.45);
+      background: linear-gradient(165deg, rgba(94, 234, 212, 0.12) 0%, rgba(22, 22, 28, 0.98) 100%);
+      box-shadow: 0 0 24px rgba(94, 234, 212, 0.15);
+    }
+
+    .flow-step .step-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s var(--ease);
+    }
+
+    .flow-step.active .step-icon {
+      background: var(--gold-soft);
+      border-color: rgba(94, 234, 212, 0.4);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    .flow-step .step-name {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .flow-step.active .step-name { color: var(--gold-light); }
+
+    .flow-step .step-count {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.35rem;
+      color: var(--cream);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Table */
+    .table-section {
+      animation: fadeUp 0.75s var(--ease-out) 0.2s backwards;
+    }
+
+    .table-head-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-head-bar h3 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.1rem;
+      color: var(--cream);
+    }
+
+    .table-hint { font-size: 0.8rem; color: var(--text-muted); }
+    .table-hint em { font-style: normal; color: var(--gold); }
+
+    .table-card {
+      background: linear-gradient(165deg, rgba(30, 30, 36, 0.85) 0%, rgba(18, 18, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: box-shadow 0.4s var(--ease-out);
+    }
+
+    .table-card:hover { box-shadow: var(--shadow-hover); }
+
+    .table-wrap { overflow-x: auto; }
+
+    .laundry-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1150px;
+    }
+
+    .laundry-table th {
+      text-align: left;
+      padding: 16px 18px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      background: rgba(0, 0, 0, 0.28);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      white-space: nowrap;
+    }
+
+    .laundry-table td {
+      padding: 18px 18px;
+      font-size: 0.86rem;
+      color: var(--text-soft);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      transition: color 0.25s var(--ease);
+    }
+
+    .laundry-table tbody tr { transition: background 0.3s var(--ease); }
+
+    .laundry-table tbody tr:hover {
+      background: rgba(94, 234, 212, 0.05);
+    }
+
+    .laundry-table tbody tr:hover td { color: var(--text); }
+
+    .laundry-table tbody tr.row-missing {
+      background: rgba(232, 122, 106, 0.04);
+    }
+
+    .laundry-table tbody tr.row-missing:hover {
+      background: rgba(232, 122, 106, 0.08);
+    }
+
+    .cell-order { font-size: 0.8rem; color: var(--gold); }
+
+    .cell-garment {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .garment-thumb {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(126, 200, 212, 0.1);
+      border: 1px solid rgba(126, 200, 212, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .garment-name { font-weight: 500; color: var(--cream); }
+
+    .qty-badge {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1rem;
+      color: var(--cream);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+
+    .status-pill.ok {
+      background: var(--success-soft);
+      color: var(--success);
+      border-color: rgba(143, 212, 176, 0.2);
+    }
+
+    .status-pill.pending {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .status-pill.progress {
+      background: var(--cyan-soft);
+      color: var(--cyan);
+      border-color: rgba(126, 200, 212, 0.2);
+    }
+
+    .status-pill.wash {
+      background: var(--purple-soft);
+      color: var(--purple);
+      border-color: rgba(196, 181, 232, 0.2);
+    }
+
+    .status-pill.dry {
+      background: var(--info-soft);
+      color: var(--info);
+      border-color: rgba(158, 197, 232, 0.2);
+    }
+
+    .loc-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      background: var(--gold-soft);
+      border: 1px solid rgba(94, 234, 212, 0.2);
+      color: var(--gold-light);
+    }
+
+    .staff-name { color: var(--text-soft); font-size: 0.85rem; }
+
+    .missing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .missing-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--danger);
+      background: var(--danger-soft);
+      border: 1px solid rgba(232, 122, 106, 0.3);
+      box-shadow: 0 0 12px var(--danger-glow);
+      width: fit-content;
+    }
+
+    .missing-tag svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    .return-ok { font-size: 0.82rem; color: var(--text-muted); }
+
+    .empty-table {
+      padding: 48px;
+      text-align: center;
+      color: var(--text-muted);
+      display: none;
+    }
+
+    .empty-table.show { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1280px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .workflow-steps { grid-template-columns: repeat(4, 1fr); }
+      .workflow-line { display: none; }
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .workflow-steps { grid-template-columns: repeat(3, 1fr); }
+      .content { padding: 24px; }
+      .header { padding: 0 24px; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .workflow-steps { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-bg" aria-hidden="true">
+    <div class="spotlight-main"></div>
+    <div class="spotlight spotlight-left"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+    <div class="stage-floor"></div>
+  </div>
+
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a href="index.html" class="brand-mark">
+          <div class="brand-logo" aria-hidden="true"><span>舞</span></div>
+          <div class="brand-name">
+            <h1>舞韻舞蹈服飾 ERP</h1>
+            <p>舞蹈品牌營運平台</p>
+            <span class="brand-tagline">Wuyun Dance Costume</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-label">舞台導航</p>
+        <a href="index.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="order.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></span>
+          <span class="nav-text">訂單管理</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+          <span class="nav-text">庫存管理</span>
+        </a>
+        <a href="shipping.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          <span class="nav-text">出貨管理</span>
+        </a>
+        <a href="laundry.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg></span>
+          <span class="nav-text">洗滌管理</span>
+        </a>
+        <a href="analytics.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+          <span class="nav-text">報表分析</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">林</div>
+          <div class="user-meta">
+            <div class="name">林曉雯</div>
+            <div class="role">營運總監</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <nav class="breadcrumb">
+            <a href="index.html">Dashboard</a>
+            <span> / </span>
+            <strong>洗滌與歸位</strong>
+          </nav>
+        </div>
+        <button type="button" class="btn-gold">登記歸還</button>
+      </header>
+
+      <div class="content">
+        <div class="page-intro">
+          <h2>洗滌與歸位管理</h2>
+          <p>從歸還清點到洗滌、晾曬、上架，完整追蹤每一件表演服的生命週期</p>
+        </div>
+
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-label">今日待洗滌</div>
+            <div class="kpi-value" id="kpiWaitWash">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">洗滌中</div>
+            <div class="kpi-value cyan" id="kpiWashing">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">待晾曬</div>
+            <div class="kpi-value" id="kpiDrying">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">待歸位</div>
+            <div class="kpi-value gold" id="kpiWaitShelf">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">今日完成歸位</div>
+            <div class="kpi-value success" id="kpiDoneShelf">0</div>
+          </article>
+        </div>
+
+        <section class="workflow-section">
+          <h3>工作流程</h3>
+          <div class="workflow-track">
+            <div class="workflow-line"><div class="workflow-line-fill"></div></div>
+            <div class="workflow-steps" id="workflowSteps"></div>
+          </div>
+        </section>
+
+        <section class="table-section">
+          <div class="table-head-bar">
+            <h3>洗滌工作列表</h3>
+            <p class="table-hint">共 <em id="tableCount">0</em> 件 · 點擊流程節點可篩選</p>
+          </div>
+          <div class="table-card">
+            <div class="table-wrap">
+              <table class="laundry-table">
+                <thead>
+                  <tr>
+                    <th>訂單編號</th>
+                    <th>服裝名稱</th>
+                    <th>配件數量</th>
+                    <th>歸還狀況</th>
+                    <th>洗滌狀態</th>
+                    <th>晾曬狀態</th>
+                    <th>櫃位位置</th>
+                    <th>負責人員</th>
+                  </tr>
+                </thead>
+                <tbody id="laundryBody"></tbody>
+              </table>
+            </div>
+            <div class="empty-table" id="emptyTable">尚無符合條件的工作項目</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const warnIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`;
+
+    const WORKFLOW = [
+      { id: 'returned', label: '已歸還', icon: '↩' },
+      { id: 'counting', label: '待清點', icon: '☐' },
+      { id: 'wait-wash', label: '待洗滌', icon: '◇' },
+      { id: 'washing', label: '洗滌中', icon: '◆' },
+      { id: 'drying', label: '晾曬中', icon: '☀' },
+      { id: 'wait-shelf', label: '待歸位', icon: '▣' },
+      { id: 'shelved', label: '已歸位', icon: '✓' },
+    ];
+
+    const items = [
+      { orderId: 'WY-260518-002', garment: '客家花布舞裙', qty: 14, stage: 'counting', returnStatus: '缺件', washStatus: '—', dryStatus: '—', location: '歸還暫存區', staff: '陳美玲', missing: ['銀飾腰鍊缺少', '頭巾缺少 2 件'] },
+      { orderId: 'WY-260514-011', garment: '原民羽飾套裝', qty: 8, stage: 'washing', returnStatus: 'complete', washStatus: '洗滌中', dryStatus: '—', location: '洗滌區-A線', staff: '王志明', missing: [] },
+      { orderId: 'WY-260513-012', garment: '敦煌飛天舞服', qty: 12, stage: 'washing', returnStatus: 'complete', washStatus: '洗滌中', dryStatus: '—', location: '洗滌區-A線', staff: '陳美玲', missing: [] },
+      { orderId: 'WY-260512-013', garment: '國風水袖服', qty: 6, stage: 'drying', returnStatus: 'complete', washStatus: '已完成', dryStatus: '晾曬中', location: '晾曬區-2F', staff: '張雅文', missing: [] },
+      { orderId: 'WY-260516-017', garment: '客家花布舞裙', qty: 9, stage: 'wait-shelf', returnStatus: 'complete', washStatus: '已完成', dryStatus: '已晾曬', location: 'B區-2層-05格', staff: '林佳穎', missing: [] },
+      { orderId: 'WY-260511-014', garment: '敦煌飛天舞服', qty: 40, stage: 'wait-wash', returnStatus: 'complete', washStatus: '待洗滌', dryStatus: '—', location: '待洗區-排隊', staff: '陳美玲', missing: [] },
+      { orderId: 'WY-260515-010', garment: '現代黑金流蘇服', qty: 20, stage: 'drying', returnStatus: 'complete', washStatus: '已完成', dryStatus: '晾曬中', location: '晾曬區-1F', staff: '王志明', missing: [] },
+      { orderId: 'WY-260508-021', garment: '少數民族措朗舞袍', qty: 7, stage: 'returned', returnStatus: '待清點', washStatus: '—', dryStatus: '—', location: '歸還暫存區 · 延遲', staff: '—', missing: [] },
+      { orderId: 'WY-260518-003', garment: '兒童芭蕾粉 Tutu', qty: 22, stage: 'wait-wash', returnStatus: '待清點', washStatus: '—', dryStatus: '—', location: '歸還暫存區', staff: '—', missing: [] },
+      { orderId: 'WY-260506-022', garment: '街舞寬鬆套裝', qty: 25, stage: 'shelved', returnStatus: 'complete', washStatus: '已完成', dryStatus: '已晾曬', location: 'C區-4層-02格', staff: '張雅文', missing: [] },
+      { orderId: 'WY-260510-015', garment: '肚皮舞亮片腰裙', qty: 15, stage: 'washing', returnStatus: 'complete', washStatus: '洗滌中', dryStatus: '—', location: '洗滌區-B線', staff: '陳美玲', missing: [] },
+      { orderId: 'WY-260509-025', garment: '泰雅族編織舞衣', qty: 5, stage: 'counting', returnStatus: '缺件', washStatus: '—', dryStatus: '—', location: 'A區-1層-04格', staff: '林佳穎', missing: ['羽飾頭冠缺少'] },
+      { orderId: 'WY-260507-026', garment: '現代黑金流蘇服', qty: 8, stage: 'shelved', returnStatus: 'complete', washStatus: '已完成', dryStatus: '已晾曬', location: 'C區-1層-03格', staff: '王志明', missing: [] },
+      { orderId: 'WY-260505-027', garment: '國風水袖服', qty: 10, stage: 'wait-shelf', returnStatus: 'complete', washStatus: '已完成', dryStatus: '已晾曬', location: 'A區-3層-15格', staff: '張雅文', missing: [] },
+    ];
+
+    let activeStage = 'all';
+
+    function countByStage(stage) {
+      if (stage === 'all') return items.length;
+      return items.filter(i => i.stage === stage).length;
+    }
+
+    function updateKpis() {
+      document.getElementById('kpiWaitWash').textContent = countByStage('wait-wash') + countByStage('counting');
+      document.getElementById('kpiWashing').textContent = countByStage('washing');
+      document.getElementById('kpiDrying').textContent = countByStage('drying');
+      document.getElementById('kpiWaitShelf').textContent = countByStage('wait-shelf');
+      document.getElementById('kpiDoneShelf').textContent = countByStage('shelved');
+    }
+
+    function renderWorkflow() {
+      const container = document.getElementById('workflowSteps');
+      container.innerHTML = WORKFLOW.map(step => {
+        const count = countByStage(step.id);
+        const active = activeStage === step.id ? 'active' : '';
+        return `
+          <button type="button" class="flow-step ${active}" data-stage="${step.id}">
+            <div class="step-icon">${step.icon}</div>
+            <div class="step-name">${step.label}</div>
+            <div class="step-count">${count}</div>
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('workflowSteps').addEventListener('click', e => {
+        const btn = e.target.closest('.flow-step');
+        if (!btn) return;
+        activeStage = btn.dataset.stage;
+        document.querySelectorAll('.flow-step').forEach(s => {
+          s.classList.toggle('active', s.dataset.stage === activeStage);
+        });
+        renderTable();
+      });
+    }
+
+    function renderReturnCell(item) {
+      if (item.missing.length > 0) {
+        return `
+          <div class="missing-list">
+            ${item.missing.map(m => `<span class="missing-tag">${warnIcon}${m}</span>`).join('')}
+          </div>
+        `;
+      }
+      if (item.returnStatus === 'complete') {
+        return `<span class="return-ok">清點完成</span>`;
+      }
+      return `<span class="status-pill pending">${item.returnStatus}</span>`;
+    }
+
+    function washPill(status) {
+      if (status === '—') return `<span class="status-pill pending">—</span>`;
+      if (status === '洗滌中') return `<span class="status-pill wash">${status}</span>`;
+      if (status === '待洗滌') return `<span class="status-pill progress">${status}</span>`;
+      return `<span class="status-pill ok">${status}</span>`;
+    }
+
+    function dryPill(status) {
+      if (status === '—') return `<span class="status-pill pending">—</span>`;
+      if (status === '晾曬中') return `<span class="status-pill dry">${status}</span>`;
+      if (status === '已晾曬') return `<span class="status-pill ok">${status}</span>`;
+      return `<span class="status-pill progress">${status}</span>`;
+    }
+
+    function renderTable() {
+      const filtered = activeStage === 'all'
+        ? items
+        : items.filter(i => i.stage === activeStage);
+
+      document.getElementById('tableCount').textContent = filtered.length;
+      const tbody = document.getElementById('laundryBody');
+      const empty = document.getElementById('emptyTable');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.add('show');
+        return;
+      }
+
+      empty.classList.remove('show');
+
+      tbody.innerHTML = filtered.map(item => `
+        <tr class="${item.missing.length ? 'row-missing' : ''}">
+          <td><span class="cell-order">${item.orderId}</span></td>
+          <td>
+            <div class="cell-garment">
+              <div class="garment-thumb">${item.garment.slice(0, 1)}</div>
+              <span class="garment-name">${item.garment}</span>
+            </div>
+          </td>
+          <td><span class="qty-badge">${item.qty}</span> 件</td>
+          <td>${renderReturnCell(item)}</td>
+          <td>${washPill(item.washStatus)}</td>
+          <td>${dryPill(item.dryStatus)}</td>
+          <td><span class="loc-tag">${item.location}</span></td>
+          <td><span class="staff-name">${item.staff}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function initSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const close = () => {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+      };
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay?.addEventListener('click', close);
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) close();
+        });
+      });
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href').toLowerCase() === current);
+      });
+    }
+
+    updateKpis();
+    renderWorkflow();
+    renderTable();
+    initSidebar();
+  </script>
+</body>
+</html>

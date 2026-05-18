@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>舞韻舞蹈服飾 ERP · 庫存管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <style>
+    :root {
+      --black: #0a0c10;
+      --gray-deep: #151a22;
+      --gray-mid: #283040;
+      --tiffany: #5eead4;
+      --tiffany-bright: #99f6e4;
+      --tiffany-deep: #14b8a6;
+      --tiffany-glow: rgba(94, 234, 212, 0.45);
+      --tiffany-soft: rgba(94, 234, 212, 0.14);
+      --purple: #c4b5fd;
+      --purple-bright: #ddd6fe;
+      --purple-soft: rgba(167, 139, 250, 0.18);
+      --purple-glow: rgba(167, 139, 250, 0.35);
+      --white: #ffffff;
+      --gold: var(--tiffany);
+      --gold-light: var(--tiffany-bright);
+      --gold-dim: var(--tiffany-deep);
+      --gold-glow: var(--tiffany-glow);
+      --gold-soft: var(--tiffany-soft);
+      --cream: #f8fafc;
+      --text: #f1f5f9;
+      --text-soft: #94a3b8;
+      --text-muted: #64748b;
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.15);
+      --danger-glow: rgba(251, 113, 133, 0.3);
+      --warn: #fcd34d;
+      --warn-soft: rgba(252, 211, 77, 0.14);
+      --info: #7dd3fc;
+      --info-soft: rgba(125, 211, 252, 0.14);
+      --success: #6ee7b7;
+      --success-soft: rgba(110, 231, 183, 0.14);
+      --sidebar-w: 260px;
+      --header-h: 76px;
+      --radius-lg: 22px;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --shadow-card: 0 4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 234, 212, 0.08);
+      --shadow-hover: 0 16px 56px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(94, 234, 212, 0.2), 0 0 48px rgba(94, 234, 212, 0.12), 0 0 80px rgba(167, 139, 250, 0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 15px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .stage-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .stage-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #0c0c0e 0%, var(--black) 40%, #0a0a0c 100%);
+    }
+
+    .spotlight {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+    }
+
+    .spotlight-main {
+      width: 70vw;
+      max-width: 900px;
+      height: 50vh;
+      top: -15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(94, 234, 212, 0.16) 0%, transparent 65%);
+      animation: spotlightPulse 8s ease-in-out infinite;
+    }
+
+    .spotlight-left {
+      width: 380px;
+      height: 380px;
+      bottom: 5%;
+      right: 10%;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.06) 0%, transparent 70%);
+      animation: pulseSide 8s ease-in-out infinite -3s;
+    }
+
+    .stage-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 75% 65% at 50% 25%, transparent 25%, rgba(0, 0, 0, 0.7) 100%);
+    }
+
+    @keyframes spotlightPulse {
+      0%, 100% { opacity: 0.85; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+    }
+
+    @keyframes pulseSide {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+    }
+
+    .sidebar-overlay.open { display: block; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: linear-gradient(180deg, rgba(12, 12, 14, 0.95) 0%, rgba(8, 8, 10, 0.98) 100%);
+      border-right: 1px solid rgba(94, 234, 212, 0.1);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .sidebar-brand {
+      padding: 28px 22px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, var(--gold-light) 0%, var(--gold-dim) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px var(--gold-glow);
+    }
+
+    .brand-logo span {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .brand-name h1 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.12em;
+    }
+
+    .brand-name p {
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 20px 14px; overflow-y: auto; }
+
+    .nav-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      padding: 4px 12px 14px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-soft);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 400;
+      cursor: pointer;
+      text-align: left;
+      text-decoration: none;
+      transition:
+        background 0.35s var(--ease-out),
+        color 0.25s var(--ease),
+        transform 0.35s var(--ease-out),
+        box-shadow 0.35s var(--ease-out),
+        border-color 0.35s var(--ease);
+      position: relative;
+    }
+
+    .nav-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.35s var(--ease-out), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+    }
+
+    .nav-icon svg {
+      width: 17px;
+      height: 17px;
+      opacity: 0.65;
+      stroke-width: 1.5;
+      transition: opacity 0.25s var(--ease), transform 0.35s var(--ease-out);
+    }
+
+    .nav-text { flex: 1; letter-spacing: 0.02em; }
+
+    .nav-item:hover {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.06);
+      transform: translateX(4px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-item:hover .nav-icon {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(94, 234, 212, 0.15);
+    }
+
+    .nav-item:hover .nav-icon svg {
+      opacity: 0.95;
+      transform: scale(1.05);
+    }
+
+    .nav-item.active {
+      color: var(--gold-light);
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.2) 0%, rgba(94, 234, 212, 0.06) 100%);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.12), 0 8px 32px rgba(94, 234, 212, 0.15);
+      transform: translateX(0);
+    }
+
+    .nav-item.active .nav-icon {
+      background: rgba(94, 234, 212, 0.22);
+      border-color: rgba(94, 234, 212, 0.35);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    .nav-item.active .nav-icon svg {
+      opacity: 1;
+      color: var(--gold-light);
+    }
+
+    .nav-item.active .nav-text { font-weight: 500; }
+
+    .sidebar-footer {
+      padding: 16px 14px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(94, 234, 212, 0.08);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--gray-mid), var(--gray-deep));
+      border: 1px solid rgba(94, 234, 212, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      color: var(--gold-light);
+    }
+
+    .user-meta .name { font-size: 0.85rem; font-weight: 500; }
+    .user-meta .role { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      height: var(--header-h);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(8, 8, 10, 0.6);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 20px; }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .breadcrumb { font-size: 0.8rem; color: var(--text-muted); }
+
+    .breadcrumb a {
+      color: var(--text-soft);
+      text-decoration: none;
+      transition: color 0.25s var(--ease);
+    }
+
+    .breadcrumb a:hover { color: var(--gold); }
+    .breadcrumb strong { color: var(--cream); font-weight: 500; }
+
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dim) 100%);
+      color: var(--black);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--gold-glow);
+      transition: all 0.35s var(--ease-out);
+      text-decoration: none;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--gold-glow);
+    }
+
+    .content { padding: 32px 40px 48px; flex: 1; }
+
+    .page-intro {
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s var(--ease-out) backwards;
+    }
+
+    .page-intro h2 {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.85rem;
+      font-weight: 500;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .page-intro p {
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      font-weight: 300;
+    }
+
+    /* ── KPI grid ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(160deg, rgba(34, 34, 40, 0.92) 0%, rgba(22, 22, 28, 0.96) 100%);
+      border: 1px solid rgba(94, 234, 212, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: all 0.4s var(--ease-out);
+      animation: fadeUp 0.65s var(--ease-out) backwards;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.35), transparent);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(94, 234, 212, 0.22);
+    }
+
+    .kpi-card:nth-child(1) { animation-delay: 0.04s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.08s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.12s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.16s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.2s; }
+
+    .kpi-card.alert-card {
+      border-color: rgba(232, 122, 106, 0.25);
+    }
+
+    .kpi-card.alert-card::before {
+      background: linear-gradient(90deg, transparent, rgba(232, 122, 106, 0.4), transparent);
+    }
+
+    .kpi-card.alert-card:hover {
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 122, 106, 0.2), 0 0 40px var(--danger-glow);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .kpi-value {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 2.1rem;
+      font-weight: 500;
+      color: var(--cream);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-value.gold { color: var(--gold-light); }
+    .kpi-value.danger { color: var(--danger); }
+
+    /* ── Filters ── */
+    .filter-card {
+      background: linear-gradient(165deg, rgba(30, 30, 36, 0.9) 0%, rgba(18, 18, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+      animation: fadeUp 0.65s var(--ease-out) 0.1s backwards;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(3, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.3s var(--ease);
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(94, 234, 212, 0.4);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.1);
+    }
+
+    .field input::placeholder { color: var(--text-muted); }
+
+    .field select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6c68' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+
+    .field select option { background: #1a1a1f; }
+
+    .btn-reset {
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-soft);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      white-space: nowrap;
+    }
+
+    .btn-reset:hover {
+      color: var(--cream);
+      border-color: rgba(94, 234, 212, 0.3);
+    }
+
+    .result-hint {
+      margin-top: 14px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .result-hint em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    /* ── Table ── */
+    .table-card {
+      background: linear-gradient(165deg, rgba(30, 30, 36, 0.85) 0%, rgba(18, 18, 22, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      animation: fadeUp 0.7s var(--ease-out) 0.18s backwards;
+      transition: box-shadow 0.4s var(--ease-out);
+    }
+
+    .table-card:hover { box-shadow: var(--shadow-hover); }
+
+    .table-wrap { overflow-x: auto; }
+
+    .inv-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1200px;
+    }
+
+    .inv-table th {
+      text-align: left;
+      padding: 16px 18px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      background: rgba(0, 0, 0, 0.28);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      white-space: nowrap;
+    }
+
+    .inv-table td {
+      padding: 18px 18px;
+      font-size: 0.86rem;
+      color: var(--text-soft);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      transition: color 0.25s var(--ease);
+    }
+
+    .inv-table tbody tr {
+      transition: all 0.3s var(--ease);
+    }
+
+    .inv-table tbody tr:hover {
+      background: rgba(94, 234, 212, 0.05);
+    }
+
+    .inv-table tbody tr:hover td { color: var(--text); }
+
+    .inv-table tbody tr.row-warn {
+      background: rgba(232, 122, 106, 0.04);
+    }
+
+    .inv-table tbody tr.row-warn:hover {
+      background: rgba(232, 122, 106, 0.08);
+    }
+
+    .cell-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .item-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(94, 234, 212, 0.1);
+      border: 1px solid rgba(94, 234, 212, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif TC', serif;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .cell-name .title {
+      font-weight: 500;
+      color: var(--cream);
+      display: block;
+    }
+
+    .cell-name .sku {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .type-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-soft);
+    }
+
+    .size-badge {
+      font-weight: 500;
+      color: var(--cream);
+    }
+
+    .size-badge.low {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1rem;
+      color: var(--cream);
+    }
+
+    .num.available { color: var(--gold-light); }
+
+    .num.low {
+      color: var(--danger);
+      text-shadow: 0 0 20px var(--danger-glow);
+    }
+
+    .loc-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      background: rgba(94, 234, 212, 0.08);
+      border: 1px solid rgba(94, 234, 212, 0.15);
+      color: var(--gold-light);
+    }
+
+    .loc-tag svg { width: 14px; height: 14px; opacity: 0.7; }
+
+    .accessory-ok {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .alert-pill svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .alert-pill.danger {
+      color: var(--danger);
+      background: var(--danger-soft);
+      border: 1px solid rgba(232, 122, 106, 0.3);
+      box-shadow: 0 0 16px var(--danger-glow);
+    }
+
+    .alert-pill.size-warn {
+      color: #f0a890;
+      background: rgba(240, 168, 144, 0.1);
+      border: 1px solid rgba(240, 168, 144, 0.25);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+
+    .status-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .status-badge.available {
+      background: var(--success-soft);
+      color: var(--success);
+      border-color: rgba(143, 212, 176, 0.2);
+    }
+
+    .status-badge.available::before { background: var(--success); }
+
+    .status-badge.repair {
+      background: var(--warn-soft);
+      color: var(--warn);
+      border-color: rgba(212, 184, 122, 0.2);
+    }
+
+    .status-badge.repair::before { background: var(--warn); }
+
+    .status-badge.washing {
+      background: var(--purple-soft);
+      color: var(--purple);
+      border-color: rgba(196, 181, 232, 0.2);
+    }
+
+    .status-badge.washing::before { background: var(--purple); }
+
+    .status-badge.low-stock {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: rgba(232, 122, 106, 0.25);
+    }
+
+    .status-badge.low-stock::before { background: var(--danger); }
+
+    .empty-state {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      display: none;
+    }
+
+    .empty-state.show { display: block; }
+
+    .empty-state p {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.05rem;
+      color: var(--text-soft);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1280px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-grid { grid-template-columns: 1fr 1fr; }
+      .filter-grid .btn-reset { grid-column: 1 / -1; }
+      .content { padding: 24px; }
+      .header { padding: 0 24px; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .kpi-grid { grid-template-columns: 1fr; }
+      .filter-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-bg" aria-hidden="true">
+    <div class="spotlight spotlight-main"></div>
+    <div class="spotlight spotlight-left"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a href="index.html" class="brand-mark">
+          <div class="brand-logo" aria-hidden="true"><span>舞</span></div>
+          <div class="brand-name">
+            <h1>舞韻舞蹈服飾 ERP</h1>
+            <p>舞蹈品牌營運平台</p>
+            <span class="brand-tagline">Wuyun Dance Costume</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-label">舞台導航</p>
+        <a href="index.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="order.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></span>
+          <span class="nav-text">訂單管理</span>
+        </a>
+        <a href="inventory.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+          <span class="nav-text">庫存管理</span>
+        </a>
+        <a href="shipping.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          <span class="nav-text">出貨管理</span>
+        </a>
+        <a href="laundry.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg></span>
+          <span class="nav-text">洗滌管理</span>
+        </a>
+        <a href="analytics.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+          <span class="nav-text">報表分析</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">林</div>
+          <div class="user-meta">
+            <div class="name">林曉雯</div>
+            <div class="role">營運總監</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <nav class="breadcrumb">
+            <a href="index.html">Dashboard</a>
+            <span> / </span>
+            <strong>庫存管理</strong>
+          </nav>
+        </div>
+        <a href="#" class="btn-gold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          新增服裝
+        </a>
+      </header>
+
+      <div class="content">
+        <div class="page-intro">
+          <h2>庫存管理</h2>
+          <p>掌握每一件表演服的庫存、櫃位與配件狀態</p>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid">
+          <article class="kpi-card">
+            <div class="kpi-label">總服裝數量</div>
+            <div class="kpi-value" id="kpiTotal">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">可出租數量</div>
+            <div class="kpi-value gold" id="kpiAvailable">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">維修中</div>
+            <div class="kpi-value" id="kpiRepair">0</div>
+          </article>
+          <article class="kpi-card">
+            <div class="kpi-label">洗滌中</div>
+            <div class="kpi-value" id="kpiWashing">0</div>
+          </article>
+          <article class="kpi-card alert-card">
+            <div class="kpi-label">庫存不足</div>
+            <div class="kpi-value danger" id="kpiLow">0</div>
+          </article>
+        </div>
+
+        <div class="filter-card">
+          <div class="filter-grid">
+            <div class="field">
+              <label for="filterKeyword">關鍵字搜尋</label>
+              <input type="text" id="filterKeyword" placeholder="服裝名稱、SKU…" />
+            </div>
+            <div class="field">
+              <label for="filterSize">尺寸</label>
+              <select id="filterSize">
+                <option value="">全部尺寸</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="均碼">均碼</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterType">類型</label>
+              <select id="filterType">
+                <option value="">全部類型</option>
+                <option value="原民">原民</option>
+                <option value="古典">古典</option>
+                <option value="國風">國風</option>
+                <option value="芭蕾">芭蕾</option>
+                <option value="民族">民族</option>
+                <option value="現代">現代</option>
+                <option value="街舞">街舞</option>
+                <option value="拉丁">拉丁</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterStock">庫存狀態</label>
+              <select id="filterStock">
+                <option value="">全部狀態</option>
+                <option value="available">可出租</option>
+                <option value="repair">維修中</option>
+                <option value="washing">洗滌中</option>
+                <option value="low-stock">庫存不足</option>
+              </select>
+            </div>
+            <button type="button" class="btn-reset" id="btnReset">清除篩選</button>
+          </div>
+          <p class="result-hint">顯示 <em id="resultCount">0</em> 項服裝</p>
+        </div>
+
+        <div class="table-card">
+          <div class="table-wrap">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>服裝名稱</th>
+                  <th>類型</th>
+                  <th>尺寸</th>
+                  <th>總庫存</th>
+                  <th>已預約</th>
+                  <th>可出租</th>
+                  <th>共用配件狀況</th>
+                  <th>櫃位位置</th>
+                  <th>狀態</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="emptyState">
+            <p>尚無符合條件的服裝</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const alertIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`;
+    const locIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+    const STATUS_MAP = {
+      available: { label: '可出租', cls: 'available' },
+      repair: { label: '維修中', cls: 'repair' },
+      washing: { label: '洗滌中', cls: 'washing' },
+      'low-stock': { label: '庫存不足', cls: 'low-stock' },
+    };
+
+    const inventory = [
+      { sku: 'YM-001', name: '原民羽飾套裝', type: '原民', size: 'L', total: 14, reserved: 12, available: 2, accessoryLow: true, sizeLow: true, location: 'A區-2層-08格', status: 'low-stock' },
+      { sku: 'DH-012', name: '敦煌飛天舞服', type: '古典', size: 'M', total: 18, reserved: 15, available: 3, accessoryLow: true, sizeLow: false, location: 'A區-3層-12格', status: 'low-stock' },
+      { sku: 'GF-003', name: '國風水袖服', type: '國風', size: 'M', total: 16, reserved: 13, available: 3, accessoryLow: true, sizeLow: true, location: 'A區-3層-15格', status: 'low-stock' },
+      { sku: 'HK-018', name: '客家花布舞裙', type: '民族', size: '均碼', total: 22, reserved: 10, available: 12, accessoryLow: false, sizeLow: false, location: 'B區-2層-05格', status: 'available' },
+      { sku: 'MD-027', name: '現代黑金流蘇服', type: '現代', size: 'L', total: 12, reserved: 5, available: 7, accessoryLow: false, sizeLow: false, location: 'C區-1層-03格', status: 'available' },
+      { sku: 'ST-009', name: '街舞寬鬆套裝', type: '街舞', size: 'L', total: 20, reserved: 14, available: 6, accessoryLow: false, sizeLow: true, location: 'C區-4層-02格', status: 'available' },
+      { sku: 'BT-022', name: '兒童芭蕾粉 Tutu', type: '芭蕾', size: 'XS', total: 28, reserved: 22, available: 0, accessoryLow: false, sizeLow: false, location: '洗滌區-A線', status: 'washing' },
+      { sku: 'MZ-006', name: '少數民族措朗舞袍', type: '民族', size: 'XL', total: 8, reserved: 6, available: 1, accessoryLow: true, sizeLow: true, location: 'B區-1層-06格', status: 'low-stock' },
+      { sku: 'LD-011', name: '肚皮舞亮片腰裙', type: '拉丁', size: 'S', total: 14, reserved: 4, available: 10, accessoryLow: true, sizeLow: false, location: 'B區-3層-11格', status: 'low-stock' },
+      { sku: 'GF-019', name: '古典雲肩漢服套', type: '國風', size: 'L', total: 10, reserved: 0, available: 0, accessoryLow: false, sizeLow: false, location: 'D區-1層-02格', status: 'repair' },
+      { sku: 'ST-014', name: '街舞連帽表演服', type: '街舞', size: 'M', total: 24, reserved: 8, available: 0, accessoryLow: false, sizeLow: false, location: '洗滌區-B線', status: 'washing' },
+      { sku: 'YM-008', name: '泰雅族編織舞衣', type: '原民', size: 'M', total: 6, reserved: 2, available: 2, accessoryLow: true, sizeLow: false, location: 'A區-1層-04格', status: 'low-stock' },
+      { sku: 'MD-035', name: '現代舞霧面緊身衣', type: '現代', size: 'S', total: 18, reserved: 3, available: 15, accessoryLow: false, sizeLow: false, location: 'C區-2層-09格', status: 'available' },
+      { sku: 'DH-021', name: '敦煌反彈琵琶服', type: '古典', size: 'S', total: 9, reserved: 7, available: 2, accessoryLow: true, sizeLow: true, location: 'A區-4層-07格', status: 'low-stock' },
+      { sku: 'BT-031', name: '成人芭蕾練功服白', type: '芭蕾', size: 'M', total: 32, reserved: 6, available: 0, accessoryLow: false, sizeLow: false, location: '洗滌區-待上架', status: 'washing' },
+    ];
+
+    function updateKpis(data) {
+      const totalQty = data.reduce((s, i) => s + i.total, 0);
+      const availableQty = data.reduce((s, i) => s + i.available, 0);
+      const repairQty = data.filter(i => i.status === 'repair').reduce((s, i) => s + i.total, 0);
+      const washingQty = data.filter(i => i.status === 'washing').reduce((s, i) => s + i.total, 0);
+      const lowCount = data.filter(i => i.status === 'low-stock' || i.available <= 3).length;
+
+      document.getElementById('kpiTotal').textContent = totalQty;
+      document.getElementById('kpiAvailable').textContent = availableQty;
+      document.getElementById('kpiRepair').textContent = repairQty;
+      document.getElementById('kpiWashing').textContent = washingQty;
+      document.getElementById('kpiLow').textContent = lowCount;
+    }
+
+    function renderAccessory(item) {
+      if (item.accessoryLow) {
+        return `<span class="alert-pill danger">${alertIcon}共用配件不足</span>`;
+      }
+      return `<span class="accessory-ok">配件充足</span>`;
+    }
+
+    function renderSizeCell(item) {
+      const sizeClass = item.sizeLow ? 'size-badge low' : 'size-badge';
+      let html = `<span class="${sizeClass}">${item.size}</span>`;
+      if (item.sizeLow) {
+        html += ` <span class="alert-pill size-warn">${alertIcon}尺寸不足</span>`;
+      }
+      return html;
+    }
+
+    function renderTable(filtered) {
+      const tbody = document.getElementById('inventoryBody');
+      const empty = document.getElementById('emptyState');
+      document.getElementById('resultCount').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.add('show');
+        return;
+      }
+
+      empty.classList.remove('show');
+
+      const hasWarn = (i) => i.accessoryLow || i.sizeLow || i.status === 'low-stock';
+
+      tbody.innerHTML = filtered.map(item => {
+        const st = STATUS_MAP[item.status] || STATUS_MAP.available;
+        const availClass = item.available <= 3 ? 'num low' : 'num available';
+
+        return `
+          <tr class="${hasWarn(item) ? 'row-warn' : ''}">
+            <td>
+              <div class="cell-name">
+                <div class="item-thumb">${item.name.slice(0, 1)}</div>
+                <div>
+                  <span class="title">${item.name}</span>
+                  <span class="sku">${item.sku}</span>
+                </div>
+              </div>
+            </td>
+            <td><span class="type-tag">${item.type}</span></td>
+            <td>${renderSizeCell(item)}</td>
+            <td><span class="num">${item.total}</span></td>
+            <td><span class="num">${item.reserved}</span></td>
+            <td><span class="${availClass}">${item.available}</span></td>
+            <td>${renderAccessory(item)}</td>
+            <td>
+              <span class="loc-tag">${locIcon}${item.location}</span>
+            </td>
+            <td><span class="status-badge ${st.cls}">${st.label}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function applyFilters() {
+      const kw = document.getElementById('filterKeyword').value.trim().toLowerCase();
+      const size = document.getElementById('filterSize').value;
+      const type = document.getElementById('filterType').value;
+      const stock = document.getElementById('filterStock').value;
+
+      const filtered = inventory.filter(item => {
+        if (kw && !item.name.toLowerCase().includes(kw) && !item.sku.toLowerCase().includes(kw)) return false;
+        if (size && item.size !== size) return false;
+        if (type && item.type !== type) return false;
+        if (stock && item.status !== stock) return false;
+        return true;
+      });
+
+      renderTable(filtered);
+    }
+
+    function initSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const close = () => {
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('open');
+      };
+      document.getElementById('menuToggle')?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      });
+      overlay?.addEventListener('click', close);
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) close();
+        });
+      });
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.sidebar-nav .nav-item[href]').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href').toLowerCase() === current);
+      });
+    }
+
+    document.getElementById('filterKeyword').addEventListener('input', applyFilters);
+    document.getElementById('filterSize').addEventListener('change', applyFilters);
+    document.getElementById('filterType').addEventListener('change', applyFilters);
+    document.getElementById('filterStock').addEventListener('change', applyFilters);
+    document.getElementById('btnReset').addEventListener('click', () => {
+      document.getElementById('filterKeyword').value = '';
+      document.getElementById('filterSize').value = '';
+      document.getElementById('filterType').value = '';
+      document.getElementById('filterStock').value = '';
+      applyFilters();
+    });
+
+    updateKpis(inventory);
+    applyFilters();
+    initSidebar();
+  </script>
+</body>
+</html>
