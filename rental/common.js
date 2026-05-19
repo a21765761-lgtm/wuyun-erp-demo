@@ -42,6 +42,125 @@ export function formatDateLabel(iso) {
   return d.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
 }
 
+function rentalMinDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(12, 0, 0, 0);
+  return d;
+}
+
+function rentalMaxDate() {
+  const d = rentalMinDate();
+  d.setFullYear(d.getFullYear() + 1);
+  return d;
+}
+
+function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+function isoFromParts(y, m, d) {
+  if (!y || !m || !d) return "";
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+function parseIso(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const [y, m, d] = iso.split("-").map(Number);
+  return { y, m, d };
+}
+
+/** 年 / 月 / 日 下拉選單（最早為明天，最遠一年內） */
+export function initPerformanceDatePicker({ yearEl, monthEl, dayEl, initialIso = "" }) {
+  const min = rentalMinDate();
+  const max = rentalMaxDate();
+
+  const fillSelect = (el, items, placeholder) => {
+    el.innerHTML = `<option value="">${placeholder}</option>` +
+      items.map(({ value, label }) => `<option value="${value}">${label}</option>`).join("");
+  };
+
+  const years = [];
+  for (let y = min.getFullYear(); y <= max.getFullYear(); y++) {
+    years.push({ value: String(y), label: `${y} 年` });
+  }
+  fillSelect(yearEl, years, "年");
+
+  const monthRange = (year) => {
+    const y = Number(year);
+    let start = 1;
+    let end = 12;
+    if (y === min.getFullYear()) start = min.getMonth() + 1;
+    if (y === max.getFullYear()) end = max.getMonth() + 1;
+    const items = [];
+    for (let m = start; m <= end; m++) {
+      items.push({ value: String(m), label: `${m} 月` });
+    }
+    return items;
+  };
+
+  const dayRange = (year, month) => {
+    const y = Number(year);
+    const m = Number(month);
+    if (!y || !m) return [];
+    let start = 1;
+    let end = daysInMonth(y, m);
+    if (y === min.getFullYear() && m === min.getMonth() + 1) start = min.getDate();
+    if (y === max.getFullYear() && m === max.getMonth() + 1) end = max.getDate();
+    const items = [];
+    for (let d = start; d <= end; d++) {
+      items.push({ value: String(d), label: `${d} 日` });
+    }
+    return items;
+  };
+
+  const refreshMonths = () => {
+    const prev = monthEl.value;
+    fillSelect(monthEl, monthRange(yearEl.value), "月");
+    if (prev && [...monthEl.options].some(o => o.value === prev)) monthEl.value = prev;
+    else monthEl.value = "";
+  };
+
+  const refreshDays = () => {
+    const prev = dayEl.value;
+    fillSelect(dayEl, dayRange(yearEl.value, monthEl.value), "日");
+    if (prev && [...dayEl.options].some(o => o.value === prev)) dayEl.value = prev;
+    else dayEl.value = "";
+  };
+
+  yearEl.addEventListener("change", () => {
+    refreshMonths();
+    refreshDays();
+  });
+  monthEl.addEventListener("change", refreshDays);
+
+  fillSelect(monthEl, [], "月");
+  fillSelect(dayEl, [], "日");
+
+  const initial = parseIso(initialIso);
+  if (initial) {
+    const d = new Date(initial.y, initial.m - 1, initial.d, 12, 0, 0);
+    if (d >= min && d <= max) {
+      yearEl.value = String(initial.y);
+      refreshMonths();
+      monthEl.value = String(initial.m);
+      refreshDays();
+      dayEl.value = String(initial.d);
+    }
+  }
+
+  return {
+    getValue() {
+      return isoFromParts(yearEl.value, monthEl.value, dayEl.value);
+    },
+    focusFirstEmpty() {
+      if (!yearEl.value) yearEl.focus();
+      else if (!monthEl.value) monthEl.focus();
+      else dayEl.focus();
+    }
+  };
+}
+
 const STEPS = [
   { id: 1, label: "表演日期", href: "index.html" },
   { id: 2, label: "選擇服裝", href: "costumes.html" },

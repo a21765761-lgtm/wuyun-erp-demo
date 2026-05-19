@@ -235,12 +235,30 @@
   margin-bottom: 18px;
 }
 
-.rental-field label {
+.rental-field label,
+.rental-field-label {
   display: block;
   font-size: 0.78rem;
   color: var(--text-soft);
   margin-bottom: 8px;
   font-weight: 500;
+}
+
+.rental-date-row {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 10px;
+}
+
+.rental-date-row select {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 420px) {
+  .rental-date-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .rental-field input,

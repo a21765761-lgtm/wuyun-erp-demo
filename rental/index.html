@@ -28,9 +28,13 @@
 
     <div class="rental-card">
       <div class="rental-field">
-        <label for="performanceDate">表演日期</label>
-        <input type="date" id="performanceDate" required />
-        <p class="rental-hint">以表演當日為中心計算檔期占用</p>
+        <span class="rental-field-label" id="performanceDateLabel">表演日期</span>
+        <div class="rental-date-row" role="group" aria-labelledby="performanceDateLabel">
+          <select id="perfYear" aria-label="年"></select>
+          <select id="perfMonth" aria-label="月"></select>
+          <select id="perfDay" aria-label="日"></select>
+        </div>
+        <p class="rental-hint">以表演當日為中心計算檔期占用（請從選單選擇，最早為明天）</p>
       </div>
       <div class="rental-field">
         <label for="nDays">租借天數（前後緩衝）</label>
@@ -49,7 +53,7 @@
   </main>
 
   <script type="module">
-    import { renderShell, setRentalContext, getRentalContext } from "./common.js";
+    import { renderShell, setRentalContext, getRentalContext, initPerformanceDatePicker } from "./common.js";
 
     renderShell({
       step: 1,
@@ -59,23 +63,24 @@
     });
 
     const ctx = getRentalContext();
-    const dateInput = document.getElementById("performanceDate");
+    const datePicker = initPerformanceDatePicker({
+      yearEl: document.getElementById("perfYear"),
+      monthEl: document.getElementById("perfMonth"),
+      dayEl: document.getElementById("perfDay"),
+      initialIso: ctx.performanceDate
+    });
     const daysSelect = document.getElementById("nDays");
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    dateInput.min = tomorrow.toISOString().slice(0, 10);
-
-    if (ctx.performanceDate) dateInput.value = ctx.performanceDate;
     if (ctx.nDays) daysSelect.value = String(ctx.nDays);
 
     document.getElementById("btnNext").addEventListener("click", () => {
-      if (!dateInput.value) {
-        dateInput.focus();
+      const performanceDate = datePicker.getValue();
+      if (!performanceDate) {
+        datePicker.focusFirstEmpty();
         return;
       }
       setRentalContext({
-        performanceDate: dateInput.value,
+        performanceDate,
         nDays: Number(daysSelect.value)
       });
       window.location.href = "costumes.html";
