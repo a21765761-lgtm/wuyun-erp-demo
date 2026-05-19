@@ -73,13 +73,33 @@ function calculateRemainingStock(costumeId, size, targetOrder) {
   let usedStock = 0;
 
   orders.forEach(order => {
-    if (isDateConflict(order, targetOrder)) {
+
+    // 已完成不占用
+    if (order.status === "完成") {
+      return;
+    }
+
+    const conflict =
+      isDateConflict(
+        order,
+        targetOrder
+      );
+
+    if (conflict) {
+
       order.items.forEach(item => {
-        if (item.costumeId === costumeId && item.size === size) {
+
+        if (
+          item.costumeId === costumeId &&
+          item.size === size
+        ) {
           usedStock += item.quantity;
         }
+
       });
+
     }
+
   });
 
   return {
