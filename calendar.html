@@ -7,10 +7,39 @@
   <style>
     body {
       margin: 0;
+      margin-left: 240px;
       padding: 40px;
       background: #0f172a;
       color: white;
       font-family: Arial, "Noto Sans TC", sans-serif;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100vh;
+      background: #111827;
+      padding: 30px;
+      box-sizing: border-box;
+      z-index: 100;
+    }
+
+    .sidebar h2 {
+      color: #2dd4bf;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+
+    .sidebar a:hover {
+      color: #2dd4bf;
     }
 
     .container {
@@ -135,8 +164,9 @@
 </head>
 <body>
 
+<div id="sidebar"></div>
+
 <div class="container">
-  <p class="nav"><a href="index.html">← 返回 Dashboard</a></p>
   <h1>檔期日曆</h1>
   <p class="hint">顯示：哪些日期被占用（進行中訂單 + 範例訂單，已完成不計入）</p>
 
@@ -161,7 +191,11 @@
 </div>
 
 <script type="module">
+import { renderSidebar } from "./components/sidebar.js";
 import { orders } from "./data/orders.js";
+
+document.getElementById("sidebar").innerHTML =
+  renderSidebar();
 
 function calculateOccupiedDates(performanceDate, nDays) {
   const performance = new Date(performanceDate + "T12:00:00");

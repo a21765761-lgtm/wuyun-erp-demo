@@ -12,10 +12,39 @@
 
     body{
       margin:0;
+      margin-left:240px;
       padding:40px;
       background:#0f172a;
       color:white;
       font-family:Arial, "Noto Sans TC", sans-serif;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100vh;
+      background: #111827;
+      padding: 30px;
+      box-sizing: border-box;
+      z-index: 100;
+    }
+
+    .sidebar h2 {
+      color: #2dd4bf;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+
+    .sidebar a:hover {
+      color: #2dd4bf;
     }
 
     h1{
@@ -73,7 +102,7 @@
 
 <body>
 
-<p class="nav"><a href="index.html">← 返回主系統</a></p>
+<div id="sidebar"></div>
 
 <h1>舞韻 ERP Dashboard</h1>
 
@@ -427,6 +456,13 @@ if(
 
 }
 
+</script>
+
+<script type="module">
+import { renderSidebar } from "./components/sidebar.js";
+
+document.getElementById("sidebar").innerHTML =
+  renderSidebar();
 </script>
 
 </body>
