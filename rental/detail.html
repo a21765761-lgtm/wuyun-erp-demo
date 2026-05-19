@@ -66,7 +66,20 @@
     const bar = document.getElementById("detailBar");
     bar.hidden = false;
 
+    function getStockForSize(size) {
+      return costume.stock[size] ?? 0;
+    }
+
+    function clampQuantity(q, size) {
+      const max = getStockForSize(size);
+      if (max <= 0) return 0;
+      return Math.min(Math.max(1, q), max);
+    }
+
     function render() {
+      quantity = clampQuantity(quantity, selectedSize);
+      const stock = getStockForSize(selectedSize);
+      const atMax = quantity >= stock && stock > 0;
       root.innerHTML = `
         <div class="detail-layout">
           <div class="detail-hero-visual ${costume.hue}">${costume.emoji}</div>
@@ -86,14 +99,14 @@
                     <button type="button" class="size-opt ${s === selectedSize ? "active" : ""}" data-size="${s}">${s}</button>
                   `).join("")}
                 </div>
-                <p class="rental-hint">庫存參考：${costume.stock[selectedSize] ?? "—"} 件</p>
+                <p class="rental-hint">庫存參考：${stock} 件${stock > 0 ? ` · 最多可選 ${stock} 件` : " · 暫無庫存"}</p>
               </div>
               <div class="rental-field">
                 <label>數量</label>
                 <div class="qty-row">
                   <button type="button" class="qty-btn" id="qtyMinus">−</button>
                   <span class="qty-val" id="qtyVal">${quantity}</span>
-                  <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                  <button type="button" class="qty-btn" id="qtyPlus"${atMax ? " disabled" : ""}>+</button>
                 </div>
               </div>
               <p style="font-size:1.1rem;font-weight:600;color:var(--tiffany-bright)">
@@ -108,6 +121,7 @@
       document.querySelectorAll(".size-opt").forEach(btn => {
         btn.addEventListener("click", () => {
           selectedSize = btn.dataset.size;
+          quantity = clampQuantity(quantity, selectedSize);
           render();
         });
       });
@@ -116,7 +130,7 @@
         render();
       };
       document.getElementById("qtyPlus").onclick = () => {
-        quantity = Math.min(costume.stock[selectedSize] || 99, quantity + 1);
+        quantity = clampQuantity(quantity + 1, selectedSize);
         render();
       };
     }
@@ -124,6 +138,19 @@
     render();
 
     function handleAddToCart() {
+      quantity = clampQuantity(quantity, selectedSize);
+      const stock = getStockForSize(selectedSize);
+
+      if (stock <= 0 || quantity < 1 || quantity > stock) {
+        alert(
+          stock <= 0
+            ? "此尺寸目前無庫存，請選擇其他尺寸"
+            : `此尺寸最多可租借 ${stock} 件，請調整數量`
+        );
+        render();
+        return;
+      }
+
       const ctx = getRentalContext();
       const item = {
         productId: costume.id,
@@ -133,7 +160,13 @@
         performanceDate: ctx.performanceDate
       };
 
-      addToCart(item);
+      try {
+        addToCart(item, { maxQuantity: stock });
+      } catch {
+        alert(`此尺寸最多可租借 ${stock} 件，請調整數量`);
+        render();
+        return;
+      }
       alert("已加入購物車");
     }
 

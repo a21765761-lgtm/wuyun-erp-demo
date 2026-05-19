@@ -486,8 +486,13 @@
   transition: all 0.3s;
 }
 
-.qty-btn:hover {
+.qty-btn:hover:not(:disabled) {
   box-shadow: 0 0 16px var(--tiffany-glow);
+}
+
+.qty-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .qty-val {
