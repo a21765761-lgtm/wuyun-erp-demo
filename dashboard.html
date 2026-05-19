@@ -142,6 +142,17 @@
 
 </div>
 
+<div
+  class="card"
+  style="margin-top:30px;"
+>
+  <h2 style="color:#f87171;">
+    ⚠️ 庫存不足警示
+  </h2>
+
+  <div id="stock-warning"></div>
+</div>
+
 <!-- 待出貨 -->
 <div
   class="card"
@@ -251,6 +262,78 @@ if(shippingOrders.length === 0){
     shippingList.appendChild(div);
 
   });
+
+}
+
+const inventory = [
+
+  {
+    name:"敦煌飛天舞服",
+
+    sizes:{
+      S:10,
+      M:3,
+      L:1
+    }
+  },
+
+  {
+    name:"原民羽飾套裝",
+
+    sizes:{
+      S:0,
+      M:2,
+      L:5
+    }
+  }
+
+];
+
+const warningDiv =
+  document.getElementById(
+    "stock-warning"
+  );
+
+inventory.forEach(product => {
+
+  Object.entries(
+    product.sizes
+  ).forEach(([size,qty]) => {
+
+    if(qty <= 2){
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "list-item";
+
+      div.innerHTML = `
+
+        ${product.name}
+        ｜${size} 尺寸
+
+        <br>
+
+        剩餘：
+        ${qty}
+
+      `;
+
+      warningDiv.appendChild(div);
+
+    }
+
+  });
+
+});
+
+if(
+  warningDiv.innerHTML === ""
+){
+
+  warningDiv.innerHTML =
+    "<p>目前庫存充足</p>";
 
 }
 
