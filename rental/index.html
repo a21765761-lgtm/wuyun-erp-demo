@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>選擇表演日期 · 舞韻租借</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand.css" />
+  <link rel="stylesheet" href="rental.css" />
+</head>
+<body class="rental-app">
+  <div class="stage-bg" aria-hidden="true">
+    <div class="neon-grid"></div>
+    <div class="neon-beam neon-beam-1"></div>
+    <div class="neon-beam neon-beam-2"></div>
+    <div class="spotlight spotlight-main"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <header class="rental-header" id="rentalHeader"></header>
+  <nav class="rental-steps" id="rentalSteps" aria-label="租借步驟"></nav>
+
+  <main class="rental-main">
+    <div class="rental-hero" id="rentalHero"></div>
+
+    <div class="rental-card">
+      <div class="rental-field">
+        <label for="performanceDate">表演日期</label>
+        <input type="date" id="performanceDate" required />
+        <p class="rental-hint">以表演當日為中心計算檔期占用</p>
+      </div>
+      <div class="rental-field">
+        <label for="nDays">租借天數（前後緩衝）</label>
+        <select id="nDays">
+          <option value="2">2 天</option>
+          <option value="3" selected>3 天</option>
+          <option value="5">5 天</option>
+          <option value="7">7 天</option>
+        </select>
+        <p class="rental-hint">含出貨、排練與歸還緩衝期</p>
+      </div>
+      <button type="button" class="rental-btn rental-btn-primary" id="btnNext">
+        下一步 · 選擇服裝
+      </button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { renderShell, setRentalContext, getRentalContext } from "./common.js";
+
+    renderShell({
+      step: 1,
+      title: "選擇表演日期",
+      subtitle: "告訴我們您的登台日，我們將為您保留檔期與庫存",
+      showCart: true
+    });
+
+    const ctx = getRentalContext();
+    const dateInput = document.getElementById("performanceDate");
+    const daysSelect = document.getElementById("nDays");
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().slice(0, 10);
+
+    if (ctx.performanceDate) dateInput.value = ctx.performanceDate;
+    if (ctx.nDays) daysSelect.value = String(ctx.nDays);
+
+    document.getElementById("btnNext").addEventListener("click", () => {
+      if (!dateInput.value) {
+        dateInput.focus();
+        return;
+      }
+      setRentalContext({
+        performanceDate: dateInput.value,
+        nDays: Number(daysSelect.value)
+      });
+      window.location.href = "costumes.html";
+    });
+  </script>
+</body>
+</html>

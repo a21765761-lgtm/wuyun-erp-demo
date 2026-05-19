@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>購物車 · 舞韻租借</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 style="font-size:1.5rem;margin-bottom:8px;background:linear-gradient(90deg,#fff,#5eead4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">購物車</h1>
+    <p style="color:var(--text-soft);margin-bottom:24px;font-size:0.9rem">
+      <a href="rental/index.html" style="color:var(--tiffany)">← 繼續租借</a>
+    </p>
+    <div id="cartList"></div>
+    <p id="emptyMsg" style="display:none;color:var(--text-muted);text-align:center;padding:40px">購物車是空的</p>
+  </div>
+
+  <script type="module">
+    import { getCart } from "./data/cart.js";
+
+    const cartList = document.getElementById("cartList");
+    const emptyMsg = document.getElementById("emptyMsg");
+    const cart = getCart();
+
+    if (cart.length === 0) {
+      emptyMsg.style.display = "block";
+    }
+
+    cart.forEach(item => {
+      const div = document.createElement("div");
+
+      div.innerHTML = `
+        <p>${item.productName}</p>
+        <p>尺寸：${item.size}</p>
+        <p>數量：${item.quantity}</p>
+        <p>表演日：${item.performanceDate}</p>
+        <hr>
+      `;
+
+      cartList.appendChild(div);
+    });
+  </script>
+</body>
+</html>

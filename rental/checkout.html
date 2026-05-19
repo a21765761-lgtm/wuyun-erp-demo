@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>送出訂單 · 舞韻租借</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand.css" />
+  <link rel="stylesheet" href="rental.css" />
+</head>
+<body class="rental-app">
+  <div class="stage-bg" aria-hidden="true">
+    <div class="neon-grid"></div>
+    <div class="spotlight spotlight-main"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <header class="rental-header" id="rentalHeader"></header>
+  <nav class="rental-steps" id="rentalSteps"></nav>
+
+  <main class="rental-main">
+    <div class="rental-hero" id="rentalHero"></div>
+    <div id="checkoutContent"></div>
+  </main>
+
+  <script type="module">
+    import { renderShell, requireDate, requireCart, getCart, getRentalContext, formatMoney, formatDateLabel, saveCart, setRentalContext } from "./common.js";
+
+    if (!requireDate() || !requireCart()) throw new Error("redirect");
+
+    const ctx = getRentalContext();
+    const cart = getCart();
+    const container = document.getElementById("checkoutContent");
+
+    const subtotal = cart.reduce(
+      (s, l) => s + l.pricePerDay * l.quantity * ctx.nDays,
+      0
+    );
+
+    renderShell({
+      step: 4,
+      title: "送出訂單",
+      subtitle: "填寫聯絡資訊，我們將於 1 個工作天內確認檔期",
+      showCart: false
+    });
+
+    container.innerHTML = `
+      <div class="rental-card" style="margin-bottom:16px">
+        <h3 style="font-size:0.95rem;margin-bottom:12px;color:var(--cream)">訂單摘要</h3>
+        <p class="rental-hint">表演日：${formatDateLabel(ctx.performanceDate)} · ${ctx.nDays} 天</p>
+        <ul style="list-style:none;margin-top:12px;font-size:0.85rem;color:var(--text-soft)">
+          ${cart.map(l => `<li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">${l.name} · ${l.size} × ${l.quantity}</li>`).join("")}
+        </ul>
+        <p style="margin-top:16px;font-size:1.1rem;font-weight:700;color:var(--tiffany-bright)">預估 ${formatMoney(subtotal)}</p>
+      </div>
+
+      <form class="rental-card" id="checkoutForm">
+        <div class="rental-field">
+          <label for="customer">單位 / 客戶名稱</label>
+          <input type="text" id="customer" placeholder="例：嘉義女中舞蹈班" required />
+        </div>
+        <div class="rental-field">
+          <label for="contact">聯絡人</label>
+          <input type="text" id="contact" placeholder="例：林佩蓉老師" required />
+        </div>
+        <div class="rental-field">
+          <label for="phone">手機</label>
+          <input type="tel" id="phone" placeholder="09xx xxx xxx" required />
+        </div>
+        <div class="rental-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="name@school.edu.tw" />
+        </div>
+        <div class="rental-field">
+          <label for="note">備註</label>
+          <textarea id="note" rows="3" placeholder="尺寸調整、出貨地址等特殊需求"></textarea>
+        </div>
+        <button type="submit" class="rental-btn rental-btn-primary">確認送出訂單</button>
+      </form>
+    `;
+
+    document.getElementById("checkoutForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const orderId = "WY-" + Date.now().toString().slice(-8);
+      saveCart([]);
+      setRentalContext({ performanceDate: "", nDays: 3 });
+
+      container.innerHTML = `
+        <div class="rental-card" style="text-align:center;padding:40px 24px">
+          <div class="success-icon">✓</div>
+          <h2 style="font-size:1.35rem;margin-bottom:8px">訂單已送出</h2>
+          <p style="color:var(--text-soft);line-height:1.7">感謝您的預約！營運團隊將盡快與您確認檔期與庫存。</p>
+          <span class="order-id-pill">${orderId}</span>
+          <div style="margin-top:28px;display:flex;flex-direction:column;gap:10px">
+            <a href="index.html" class="rental-btn rental-btn-primary">再租一次</a>
+            <a href="../index.html" class="rental-btn rental-btn-ghost">返回 ERP Dashboard</a>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("rentalSteps").innerHTML = "";
+    });
+  </script>
+</body>
+</html>

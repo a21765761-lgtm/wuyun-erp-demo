@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>舞韻預約測試</title>
+
+  <style>
+    body{
+      background:#111827;
+      color:white;
+      font-family:Arial;
+      padding:40px;
+    }
+
+    .card{
+      background:#1f2937;
+      padding:30px;
+      border-radius:20px;
+      max-width:500px;
+    }
+
+    input,select{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      margin-bottom:20px;
+      border-radius:10px;
+      border:none;
+    }
+
+    button{
+      background:#14b8a6;
+      color:white;
+      padding:12px 20px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .success{
+      color:#34d399;
+      margin-top:20px;
+    }
+
+    .error{
+      color:#f87171;
+      margin-top:20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <h1>舞韻預約測試</h1>
+
+    <label>表演日期</label>
+    <input type="date" id="date">
+
+    <label>尺寸</label>
+    <select id="size">
+      <option value="S">S</option>
+      <option value="M">M</option>
+      <option value="L">L</option>
+    </select>
+
+    <label>數量</label>
+    <input type="number" id="quantity" value="1">
+
+    <button onclick="checkBooking()">
+      檢查庫存
+    </button>
+
+    <div id="result"></div>
+
+  </div>
+
+<script type="module">
+
+import { inventory } from "./data/inventory.js";
+import { orders } from "./data/orders.js";
+
+function calculateOccupiedDates(
+  performanceDate,
+  nDays
+){
+  const performance = new Date(
+    performanceDate
+  );
+
+  const start = new Date(performance);
+
+  start.setDate(
+    start.getDate() - nDays
+  );
+
+  const end = new Date(performance);
+
+  end.setDate(
+    end.getDate() + nDays
+  );
+
+  return { start, end };
+}
+
+function isDateConflict(
+  orderA,
+  orderB
+){
+  const rangeA =
+    calculateOccupiedDates(
+      orderA.performanceDate,
+      orderA.nDays
+    );
+
+  const rangeB =
+    calculateOccupiedDates(
+      orderB.performanceDate,
+      orderB.nDays
+    );
+
+  return (
+    rangeA.start <= rangeB.end &&
+    rangeA.end >= rangeB.start
+  );
+}
+
+function calculateRemainingStock(
+  costumeId,
+  size,
+  targetOrder
+){
+  const costume =
+    inventory.find(
+      item => item.id === costumeId
+    );
+
+  const totalStock =
+    costume.sizes[size];
+
+  let usedStock = 0;
+
+  orders.forEach(order => {
+
+    const conflict =
+      isDateConflict(
+        order,
+        targetOrder
+      );
+
+    if(conflict){
+
+      order.items.forEach(item => {
+
+        if(
+          item.costumeId === costumeId &&
+          item.size === size
+        ){
+          usedStock += item.quantity;
+        }
+
+      });
+
+    }
+
+  });
+
+  return {
+    totalStock,
+    usedStock,
+    remaining:
+      totalStock - usedStock
+  };
+}
+
+window.checkBooking = function(){
+
+  const date =
+    document.getElementById("date").value;
+
+  const size =
+    document.getElementById("size").value;
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "quantity"
+      ).value
+    );
+
+  const testOrder = {
+
+    performanceDate: date,
+
+    nDays: 3,
+
+    items:[
+      {
+        costumeId:1,
+        size,
+        quantity
+      }
+    ]
+  };
+
+  const stock =
+    calculateRemainingStock(
+      1,
+      size,
+      testOrder
+    );
+
+  const result =
+    document.getElementById(
+      "result"
+    );
+
+  if(stock.remaining >= quantity){
+
+    result.innerHTML = `
+      <div class="success">
+        ✅ 可租借<br>
+        剩餘數量：
+        ${stock.remaining}
+      </div>
+    `;
+
+  }else{
+
+    result.innerHTML = `
+      <div class="error">
+        ❌ 庫存不足<br>
+        剩餘數量：
+        ${stock.remaining}
+      </div>
+    `;
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>

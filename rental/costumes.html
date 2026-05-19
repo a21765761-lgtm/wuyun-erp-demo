@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>選擇服裝 · 舞韻租借</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand.css" />
+  <link rel="stylesheet" href="rental.css" />
+</head>
+<body class="rental-app">
+  <div class="stage-bg" aria-hidden="true">
+    <div class="neon-grid"></div>
+    <div class="spotlight spotlight-main"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <header class="rental-header" id="rentalHeader"></header>
+  <nav class="rental-steps" id="rentalSteps"></nav>
+
+  <main class="rental-main">
+    <div class="rental-hero" id="rentalHero"></div>
+    <div class="filter-chips-rental" id="categoryFilter"></div>
+    <div class="rental-grid" id="costumeGrid"></div>
+  </main>
+
+  <div class="rental-bar">
+    <a href="cart.html" class="rental-btn rental-btn-primary" id="barCart">查看購物車</a>
+  </div>
+
+  <script type="module">
+    import { costumes } from "./data.js";
+    import { renderShell, requireDate, cartCount, formatMoney } from "./common.js";
+
+    if (!requireDate()) throw new Error("redirect");
+
+    renderShell({
+      step: 2,
+      title: "選擇服裝",
+      subtitle: "瀏覽表演服款式，點選查看詳情並加入購物車",
+      showCart: true
+    });
+
+    const categories = ["全部", ...new Set(costumes.map(c => c.category))];
+    let activeCat = "全部";
+    const filterEl = document.getElementById("categoryFilter");
+    const grid = document.getElementById("costumeGrid");
+
+    function renderFilters() {
+      filterEl.innerHTML = categories.map(cat => `
+        <button type="button" class="${cat === activeCat ? "active" : ""}" data-cat="${cat}">${cat}</button>
+      `).join("");
+      filterEl.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeCat = btn.dataset.cat;
+          renderFilters();
+          renderGrid();
+        });
+      });
+    }
+
+    function renderGrid() {
+      const list = activeCat === "全部"
+        ? costumes
+        : costumes.filter(c => c.category === activeCat);
+
+      grid.innerHTML = list.map((c, i) => `
+        <a href="detail.html?id=${c.id}" class="rental-card costume-card" style="animation-delay:${i * 0.05}s">
+          <div class="costume-card-visual ${c.hue}">${c.emoji}</div>
+          <div class="costume-card-body">
+            <div class="costume-card-cat">${c.category}</div>
+            <h3>${c.name}</h3>
+            <p class="costume-card-tagline">${c.tagline}</p>
+            <div class="costume-card-foot">
+              <span class="costume-price">${formatMoney(c.pricePerDay)} <small>/ 天</small></span>
+              <span style="font-size:0.78rem;color:var(--tiffany)">查看 →</span>
+            </div>
+          </div>
+        </a>
+      `).join("");
+    }
+
+    renderFilters();
+    renderGrid();
+
+    const bar = document.getElementById("barCart");
+    const n = cartCount();
+    if (n > 0) bar.textContent = `查看購物車（${n}）`;
+  </script>
+</body>
+</html>

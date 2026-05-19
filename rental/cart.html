@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>購物車 · 舞韻租借</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand.css" />
+  <link rel="stylesheet" href="rental.css" />
+</head>
+<body class="rental-app">
+  <div class="stage-bg" aria-hidden="true">
+    <div class="neon-grid"></div>
+    <div class="spotlight spotlight-purple"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <header class="rental-header" id="rentalHeader"></header>
+  <nav class="rental-steps" id="rentalSteps"></nav>
+
+  <main class="rental-main">
+    <div class="rental-hero" id="rentalHero"></div>
+    <div id="cartList" class="rental-card" style="padding:20px"></div>
+    <p id="emptyMsg" class="rental-empty" style="display:none">購物車是空的，<a href="costumes.html" style="color:var(--tiffany)">去選服裝</a></p>
+  </main>
+
+  <div class="rental-bar" id="cartBar" hidden>
+    <a href="costumes.html" class="rental-btn rental-btn-ghost">繼續選購</a>
+    <a href="../cart.html" class="rental-btn rental-btn-ghost">簡易購物車</a>
+    <a href="checkout.html" class="rental-btn rental-btn-primary">下一步 · 填寫資料</a>
+  </div>
+
+  <script type="module">
+    import { getCart } from "../data/cart.js";
+    import { renderShell, requireDate, formatDateLabel } from "./common.js";
+
+    if (!requireDate()) throw new Error("redirect");
+
+    renderShell({
+      step: 3,
+      title: "購物車",
+      subtitle: "確認租借項目",
+      showCart: false
+    });
+
+    const cartList = document.getElementById("cartList");
+    const emptyMsg = document.getElementById("emptyMsg");
+    const bar = document.getElementById("cartBar");
+    const cart = getCart();
+
+    if (cart.length === 0) {
+      cartList.style.display = "none";
+      emptyMsg.style.display = "block";
+      bar.hidden = true;
+    } else {
+      bar.hidden = false;
+      cart.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "cart-line-item";
+        div.style.cssText = "padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.06)";
+        div.innerHTML = `
+          <p style="font-weight:600;color:var(--cream);margin-bottom:8px">${item.productName}</p>
+          <p style="font-size:0.85rem;color:var(--text-soft);margin:4px 0">尺寸：${item.size}</p>
+          <p style="font-size:0.85rem;color:var(--text-soft);margin:4px 0">數量：${item.quantity}</p>
+          <p style="font-size:0.85rem;color:var(--text-soft);margin:4px 0">表演日：${item.performanceDate}</p>
+          <hr style="margin-top:14px;border:none;border-top:1px solid rgba(45,212,191,0.15)">
+        `;
+        cartList.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

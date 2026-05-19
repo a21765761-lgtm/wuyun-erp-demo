@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>服裝詳情 · 舞韻租借</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand.css" />
+  <link rel="stylesheet" href="rental.css" />
+</head>
+<body class="rental-app">
+  <div class="stage-bg" aria-hidden="true">
+    <div class="neon-grid"></div>
+    <div class="spotlight spotlight-main"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <header class="rental-header" id="rentalHeader"></header>
+  <nav class="rental-steps" id="rentalSteps"></nav>
+
+  <main class="rental-main" id="detailMain">
+    <a href="costumes.html" class="back-link">← 返回列表</a>
+    <div id="detailContent"></div>
+  </main>
+
+  <div class="rental-bar" id="detailBar" hidden>
+    <button type="button" class="rental-btn rental-btn-ghost" id="btnAddCart">加入購物車</button>
+          <a href="../cart.html" class="rental-btn rental-btn-primary">查看購物車</a>
+  </div>
+
+  <script type="module">
+    import { getCostumeById } from "./data.js";
+    import { addToCart } from "../data/cart.js";
+    import {
+      renderShell, requireDate,
+      getRentalContext, formatMoney
+    } from "./common.js";
+
+    if (!requireDate()) throw new Error("redirect");
+
+    const id = new URLSearchParams(location.search).get("id");
+    const costume = getCostumeById(id);
+
+    if (!costume) {
+      document.getElementById("detailContent").innerHTML = `
+        <div class="rental-empty"><p>找不到此款服裝</p>
+        <a href="costumes.html" class="rental-btn rental-btn-primary">返回列表</a></div>`;
+      throw new Error("not found");
+    }
+
+    document.title = `${costume.name} · 舞韻租借`;
+
+    renderShell({
+      step: 2,
+      title: costume.name,
+      subtitle: costume.tagline,
+      showCart: true
+    });
+
+    let selectedSize = costume.sizes[0];
+    let quantity = 1;
+
+    const root = document.getElementById("detailContent");
+    const bar = document.getElementById("detailBar");
+    bar.hidden = false;
+
+    function render() {
+      root.innerHTML = `
+        <div class="detail-layout">
+          <div class="detail-hero-visual ${costume.hue}">${costume.emoji}</div>
+          <div>
+            <div class="rental-card" style="margin-bottom:16px">
+              <span class="costume-card-cat">${costume.category}</span>
+              <p style="margin:12px 0;color:var(--text-soft);line-height:1.7">${costume.description}</p>
+              <div class="tag-list">
+                ${costume.highlights.map(h => `<span class="tag">${h}</span>`).join("")}
+              </div>
+            </div>
+            <div class="rental-card">
+              <div class="rental-field">
+                <label>選擇尺寸</label>
+                <div class="size-picker" id="sizePicker">
+                  ${costume.sizes.map(s => `
+                    <button type="button" class="size-opt ${s === selectedSize ? "active" : ""}" data-size="${s}">${s}</button>
+                  `).join("")}
+                </div>
+                <p class="rental-hint">庫存參考：${costume.stock[selectedSize] ?? "—"} 件</p>
+              </div>
+              <div class="rental-field">
+                <label>數量</label>
+                <div class="qty-row">
+                  <button type="button" class="qty-btn" id="qtyMinus">−</button>
+                  <span class="qty-val" id="qtyVal">${quantity}</span>
+                  <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                </div>
+              </div>
+              <p style="font-size:1.1rem;font-weight:600;color:var(--tiffany-bright)">
+                ${formatMoney(costume.pricePerDay * quantity)} <small style="color:var(--text-muted);font-weight:400">/ 計價單位</small>
+              </p>
+              <p class="rental-hint" style="margin-top:8px">含配件：${costume.accessories.join("、")}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.querySelectorAll(".size-opt").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedSize = btn.dataset.size;
+          render();
+        });
+      });
+      document.getElementById("qtyMinus").onclick = () => {
+        quantity = Math.max(1, quantity - 1);
+        render();
+      };
+      document.getElementById("qtyPlus").onclick = () => {
+        quantity = Math.min(costume.stock[selectedSize] || 99, quantity + 1);
+        render();
+      };
+    }
+
+    render();
+
+    function handleAddToCart() {
+      const ctx = getRentalContext();
+      const item = {
+        productId: costume.id,
+        productName: costume.name,
+        size: selectedSize,
+        quantity,
+        performanceDate: ctx.performanceDate
+      };
+
+      addToCart(item);
+      alert("已加入購物車");
+    }
+
+    document.getElementById("btnAddCart").addEventListener("click", handleAddToCart);
+  </script>
+</body>
+</html>
