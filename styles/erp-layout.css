@@ -1,0 +1,158 @@
+body {
+  margin: 0;
+  font-family: Arial, "Noto Sans TC", sans-serif;
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #111827,
+      #1e293b
+    );
+  color: white;
+  display: flex;
+}
+
+/* Sidebar */
+
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background:
+    rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border-right:
+    1px solid rgba(255, 255, 255, 0.08);
+  padding: 30px;
+  box-sizing: border-box;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: #2dd4bf;
+  margin-bottom: 40px;
+}
+
+.nav-link {
+  display: block;
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  transition: 0.2s;
+}
+
+.nav-link:hover {
+  background:
+    rgba(45, 212, 191, 0.12);
+  color: white;
+}
+
+/* Main */
+
+.main {
+  margin-left: 260px;
+  width: 100%;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #2dd4bf;
+}
+
+/* Cards */
+
+.card {
+  background:
+    rgba(30, 41, 59, 0.9);
+  border:
+    1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Grid */
+
+.grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* Stats */
+
+.stat-title {
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.stat-value {
+  font-size: 42px;
+  font-weight: bold;
+  color: #2dd4bf;
+}
+
+/* Buttons */
+
+.btn {
+  background: #14b8a6;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+/* Table */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 16px;
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+/* Select */
+
+select {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* Lists */
+
+.list-item {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card h2 {
+  margin-top: 0;
+}

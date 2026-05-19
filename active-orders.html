@@ -4,82 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>進行中訂單｜舞韻</title>
+  <link rel="stylesheet" href="styles/erp-layout.css" />
   <style>
-    body {
-      margin: 0;
-      margin-left: 240px;
-      padding: 40px;
-      background: #0f172a;
-      color: white;
-      font-family: Arial, "Noto Sans TC", sans-serif;
-    }
-
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 240px;
-      height: 100vh;
-      background: #111827;
-      padding: 30px;
-      box-sizing: border-box;
-      z-index: 100;
-    }
-
-    .sidebar h2 {
-      color: #2dd4bf;
-      margin-bottom: 30px;
-    }
-
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      margin-bottom: 20px;
-    }
-
-    .sidebar a:hover {
-      color: #2dd4bf;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-    }
-
-    h1 {
-      color: #2dd4bf;
-      margin-bottom: 8px;
-    }
-
-    .nav {
-      margin-bottom: 28px;
-    }
-
-    .nav a {
-      color: #2dd4bf;
-      text-decoration: none;
-      margin-right: 16px;
-    }
-
-    .nav a:hover {
-      text-decoration: underline;
-    }
-
     #orders p {
       color: #94a3b8;
       padding: 24px 0;
     }
 
-    .order-card {
-      background: #1e293b;
-      padding: 24px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-      border: 1px solid #334155;
-    }
-
-    .order-card h3 {
+    .card h3 {
       margin: 0 0 8px;
       color: #2dd4bf;
     }
@@ -92,14 +24,9 @@
 
     .status-select {
       margin-top: 12px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid #334155;
-      background: #334155;
-      color: white;
-      font-family: inherit;
-      font-size: 0.95rem;
       min-width: 160px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #334155;
     }
 
     .order-items {
@@ -114,10 +41,10 @@
 
 <div id="sidebar"></div>
 
-<div class="container">
-  <h1>進行中訂單</h1>
+<main class="main">
+  <h1 class="page-title">進行中訂單</h1>
   <div id="orders"></div>
-</div>
+</main>
 
 <script>
 const orders = JSON.parse(
@@ -131,7 +58,7 @@ if (orders.length === 0) {
 } else {
   orders.forEach(order => {
     const card = document.createElement("div");
-    card.className = "order-card";
+    card.className = "card";
 
     const created = order.createdAt
       ? new Date(order.createdAt).toLocaleString("zh-TW")

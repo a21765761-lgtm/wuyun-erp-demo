@@ -7,96 +7,11 @@
     content="width=device-width, initial-scale=1.0"/>
 
   <title>舞韻 ERP Dashboard</title>
-
+  <link rel="stylesheet" href="styles/erp-layout.css" />
   <style>
-
-    body{
-      margin:0;
-      margin-left:240px;
-      padding:40px;
-      background:#0f172a;
-      color:white;
-      font-family:Arial, "Noto Sans TC", sans-serif;
-    }
-
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 240px;
-      height: 100vh;
-      background: #111827;
-      padding: 30px;
-      box-sizing: border-box;
-      z-index: 100;
-    }
-
-    .sidebar h2 {
-      color: #2dd4bf;
-      margin-bottom: 30px;
-    }
-
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      margin-bottom: 20px;
-    }
-
-    .sidebar a:hover {
-      color: #2dd4bf;
-    }
-
-    h1{
-      color:#2dd4bf;
-      margin-bottom:30px;
-    }
-
-    .grid{
-      display:grid;
-
-      grid-template-columns:
-        repeat(auto-fit,minmax(250px,1fr));
-
-      gap:20px;
-    }
-
-    .card{
-      background:#1e293b;
-      padding:25px;
-      border-radius:20px;
-    }
-
-    .title{
-      color:#94a3b8;
-      margin-bottom:10px;
-    }
-
-    .value{
-      font-size:36px;
-      font-weight:bold;
-      color:#2dd4bf;
-    }
-
-    .list-item{
-      margin-top:10px;
-      padding-top:10px;
-      border-top:1px solid #334155;
-    }
-
-    .nav{
-      margin-bottom:20px;
-    }
-
-    .nav a{
-      color:#2dd4bf;
-      text-decoration:none;
-    }
-
-    .nav a:hover{
-      text-decoration:underline;
-    }
-
+    .section-warn { color: #f87171; }
+    .section-return { color: #facc15; }
+    .section-ship { color: #2dd4bf; }
   </style>
 </head>
 
@@ -104,19 +19,21 @@
 
 <div id="sidebar"></div>
 
-<h1>舞韻 ERP Dashboard</h1>
+<main class="main">
+
+<h1 class="page-title">舞韻 ERP Dashboard</h1>
 
 <div class="grid">
 
   <!-- 本月訂單 -->
   <div class="card">
 
-    <div class="title">
+    <div class="stat-title">
       本月訂單
     </div>
 
     <div
-      class="value"
+      class="stat-value"
       id="monthly-orders"
     >
       0
@@ -127,12 +44,12 @@
   <!-- 本月營收 -->
   <div class="card">
 
-    <div class="title">
+    <div class="stat-title">
       本月營收
     </div>
 
     <div
-      class="value"
+      class="stat-value"
       id="monthly-revenue"
     >
       $0
@@ -143,12 +60,12 @@
   <!-- 進行中訂單 -->
   <div class="card">
 
-    <div class="title">
+    <div class="stat-title">
       進行中訂單
     </div>
 
     <div
-      class="value"
+      class="stat-value"
       id="active-count"
     >
       0
@@ -159,7 +76,7 @@
   <!-- 今日表演 -->
   <div class="card">
 
-    <div class="title">
+    <div class="stat-title">
       今日表演
     </div>
 
@@ -175,7 +92,7 @@
   class="card"
   style="margin-top:30px;"
 >
-  <h2 style="color:#f87171;">
+  <h2 class="section-warn">
     ⚠️ 庫存不足警示
   </h2>
 
@@ -186,7 +103,7 @@
   class="card"
   style="margin-top:30px;"
 >
-  <h2 style="color:#facc15;">
+  <h2 class="section-return">
     即將歸還
   </h2>
 
@@ -199,7 +116,7 @@
   style="margin-top:30px;"
 >
 
-  <h2 style="color:#2dd4bf;">
+  <h2 class="section-ship">
     待出貨訂單
   </h2>
 
@@ -464,6 +381,8 @@ import { renderSidebar } from "./components/sidebar.js";
 document.getElementById("sidebar").innerHTML =
   renderSidebar();
 </script>
+
+</main>
 
 </body>
 </html>

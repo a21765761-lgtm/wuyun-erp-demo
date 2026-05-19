@@ -4,67 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>檔期日曆｜舞韻</title>
+  <link rel="stylesheet" href="styles/erp-layout.css" />
   <style>
-    body {
-      margin: 0;
-      margin-left: 240px;
-      padding: 40px;
-      background: #0f172a;
-      color: white;
-      font-family: Arial, "Noto Sans TC", sans-serif;
-    }
-
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 240px;
-      height: 100vh;
-      background: #111827;
-      padding: 30px;
-      box-sizing: border-box;
-      z-index: 100;
-    }
-
-    .sidebar h2 {
-      color: #2dd4bf;
-      margin-bottom: 30px;
-    }
-
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      margin-bottom: 20px;
-    }
-
-    .sidebar a:hover {
-      color: #2dd4bf;
-    }
-
-    .container {
-      max-width: 960px;
-      margin: auto;
-    }
-
-    h1 {
-      color: #2dd4bf;
-      margin-bottom: 8px;
-    }
-
-    .nav {
-      margin-bottom: 24px;
-    }
-
-    .nav a {
-      color: #2dd4bf;
-      text-decoration: none;
-    }
-
-    .nav a:hover {
-      text-decoration: underline;
-    }
-
     .hint {
       color: #94a3b8;
       margin-bottom: 20px;
@@ -166,8 +107,8 @@
 
 <div id="sidebar"></div>
 
-<div class="container">
-  <h1>檔期日曆</h1>
+<main class="main">
+  <h1 class="page-title">檔期日曆</h1>
   <p class="hint">顯示：哪些日期被占用（進行中訂單 + 範例訂單，已完成不計入）</p>
 
   <div class="controls">
@@ -188,7 +129,7 @@
 
   <div id="weekdays"></div>
   <div id="calendar"></div>
-</div>
+</main>
 
 <script type="module">
 import { renderSidebar } from "./components/sidebar.js";
