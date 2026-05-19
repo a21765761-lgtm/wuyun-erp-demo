@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0"/>
+
+  <title>舞韻 ERP Dashboard</title>
+
+  <style>
+
+    body{
+      margin:0;
+      padding:40px;
+      background:#0f172a;
+      color:white;
+      font-family:Arial, "Noto Sans TC", sans-serif;
+    }
+
+    h1{
+      color:#2dd4bf;
+      margin-bottom:30px;
+    }
+
+    .grid{
+      display:grid;
+
+      grid-template-columns:
+        repeat(auto-fit,minmax(250px,1fr));
+
+      gap:20px;
+    }
+
+    .card{
+      background:#1e293b;
+      padding:25px;
+      border-radius:20px;
+    }
+
+    .title{
+      color:#94a3b8;
+      margin-bottom:10px;
+    }
+
+    .value{
+      font-size:36px;
+      font-weight:bold;
+      color:#2dd4bf;
+    }
+
+    .list-item{
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid #334155;
+    }
+
+    .nav{
+      margin-bottom:20px;
+    }
+
+    .nav a{
+      color:#2dd4bf;
+      text-decoration:none;
+    }
+
+    .nav a:hover{
+      text-decoration:underline;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<p class="nav"><a href="index.html">← 返回主系統</a></p>
+
+<h1>舞韻 ERP Dashboard</h1>
+
+<div class="grid">
+
+  <!-- 本月訂單 -->
+  <div class="card">
+
+    <div class="title">
+      本月訂單
+    </div>
+
+    <div
+      class="value"
+      id="monthly-orders"
+    >
+      0
+    </div>
+
+  </div>
+
+  <!-- 本月營收 -->
+  <div class="card">
+
+    <div class="title">
+      本月營收
+    </div>
+
+    <div
+      class="value"
+      id="monthly-revenue"
+    >
+      $0
+    </div>
+
+  </div>
+
+  <!-- 進行中訂單 -->
+  <div class="card">
+
+    <div class="title">
+      進行中訂單
+    </div>
+
+    <div
+      class="value"
+      id="active-count"
+    >
+      0
+    </div>
+
+  </div>
+
+  <!-- 今日表演 -->
+  <div class="card">
+
+    <div class="title">
+      今日表演
+    </div>
+
+    <div id="today-performance">
+      無
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 待出貨 -->
+<div
+  class="card"
+  style="margin-top:30px;"
+>
+
+  <h2 style="color:#2dd4bf;">
+    待出貨訂單
+  </h2>
+
+  <div id="shipping-list"></div>
+
+</div>
+
+<script>
+
+const activeOrders =
+  JSON.parse(
+    localStorage.getItem(
+      "activeOrders"
+    )
+  ) || [];
+
+document.getElementById(
+  "active-count"
+).innerText =
+  activeOrders.length;
+
+// 本月訂單數
+document.getElementById(
+  "monthly-orders"
+).innerText =
+  activeOrders.length;
+
+// 假營收
+const revenue =
+  activeOrders.length * 5000;
+
+document.getElementById(
+  "monthly-revenue"
+).innerText =
+  `$${revenue}`;
+
+// 今日表演
+const today =
+  new Date().toDateString();
+
+const todayPerformance =
+  activeOrders.find(order => {
+
+    return order.items.some(item => {
+
+      return new Date(
+        item.performanceDate
+      ).toDateString() === today;
+
+    });
+
+  });
+
+if(todayPerformance){
+
+  document.getElementById(
+    "today-performance"
+  ).innerText =
+    `訂單 ${todayPerformance.id}`;
+
+}
+
+// 待出貨
+const shippingList =
+  document.getElementById(
+    "shipping-list"
+  );
+
+const shippingOrders =
+  activeOrders.filter(
+    order =>
+      order.status === "待出貨"
+  );
+
+if(shippingOrders.length === 0){
+
+  shippingList.innerHTML =
+    "<p>目前沒有待出貨訂單</p>";
+
+}else{
+
+  shippingOrders.forEach(order => {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "list-item";
+
+    div.innerHTML = `
+
+      訂單編號：
+      ${order.id}<br>
+
+      狀態：
+      ${order.status}
+
+    `;
+
+    shippingList.appendChild(div);
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
