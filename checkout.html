@@ -187,6 +187,7 @@
 
 <script type="module">
 import { getCart } from "./data/cart.js";
+import { activeOrders } from "./data/active-orders.js";
 
 const cart = getCart();
 const orderList = document.getElementById("order-list");
@@ -246,6 +247,16 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     alert("請填寫單位名稱、聯絡人、聯絡電話與寄送地址");
     return;
   }
+
+  const order = {
+    id: Date.now(),
+    createdAt: new Date().toISOString(),
+    status: "待確認",
+    items: [...cart]
+  };
+
+  activeOrders.push(order);
+  console.log(order);
 
   alert("訂單已送出！");
   localStorage.removeItem("cart");
