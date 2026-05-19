@@ -2,394 +2,164 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0"/>
-
-  <title>舞韻 ERP Dashboard</title>
-  <link rel="stylesheet" href="./styles/erp-layout.css" />
-  <style>
-    .section-warn { color: #f87171; }
-    .section-return { color: #facc15; }
-    .section-ship { color: #2dd4bf; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERP Dashboard · 舞韻</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="styles/erp-layout.css" />
 </head>
+<body class="erp-body">
+  <div id="erp-stage" aria-hidden="true"></div>
+  <div class="sidebar-overlay" id="erpSidebarOverlay"></div>
+  <div class="app">
+    <div id="erp-sidebar"></div>
+    <main class="main">
+      <header class="header erp-page-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="erpMenuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="greeting">舞韻 <span>ERP 後台</span></div>
+            <div class="header-date" id="erpHeaderDate"></div>
+          </div>
+        </div>
+      </header>
 
-<body>
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-desc">掌握訂單、檔期與庫存全局</p>
+          </div>
+        </div>
 
-<div class="sidebar">
+        <div class="quick-grid">
+          <a href="active-orders.html" class="quick-card">
+            <span class="quick-card-icon">📋</span>
+            <strong>進行中訂單</strong>
+            <span>管理待確認與出貨訂單</span>
+          </a>
+          <a href="calendar.html" class="quick-card">
+            <span class="quick-card-icon">📅</span>
+            <strong>庫存行事曆</strong>
+            <span>查看檔期占用狀況</span>
+          </a>
+          <a href="history-orders.html" class="quick-card">
+            <span class="quick-card-icon">✓</span>
+            <strong>歷史訂單</strong>
+            <span>已完成訂單紀錄</span>
+          </a>
+        </div>
 
-  <div class="logo">
-    舞韻 ERP
+        <div class="erp-grid">
+          <article class="erp-card">
+            <div class="stat-title">本月訂單</div>
+            <div class="stat-value" id="monthly-orders">0</div>
+          </article>
+          <article class="erp-card">
+            <div class="stat-title">本月營收</div>
+            <div class="stat-value" id="monthly-revenue">$0</div>
+          </article>
+          <article class="erp-card">
+            <div class="stat-title">進行中訂單</div>
+            <div class="stat-value" id="active-count">0</div>
+          </article>
+          <article class="erp-card">
+            <div class="stat-title">今日表演</div>
+            <div class="stat-value" id="today-performance" style="font-size:1.25rem">無</div>
+          </article>
+        </div>
+
+        <article class="erp-card">
+          <h2 class="section-title warn">⚠️ 庫存不足警示</h2>
+          <div id="stock-warning"></div>
+        </article>
+
+        <article class="erp-card">
+          <h2 class="section-title return">即將歸還</h2>
+          <div id="return-list"></div>
+        </article>
+
+        <article class="erp-card">
+          <h2 class="section-title ship">待出貨訂單</h2>
+          <div id="shipping-list"></div>
+        </article>
+      </div>
+    </main>
   </div>
 
-  <a class="nav-link" href="dashboard.html">Dashboard</a>
-
-  <a class="nav-link" href="active-orders.html">進行中訂單</a>
-
-  <a class="nav-link" href="history-orders.html">歷史訂單</a>
-
-  <a class="nav-link" href="calendar.html">庫存行事曆</a>
-
-</div>
-
-<div class="main">
-
-<h1 class="page-title">舞韻 ERP Dashboard</h1>
-
-<div class="grid">
-
-  <!-- 本月訂單 -->
-  <div class="card">
-
-    <div class="stat-title">
-      本月訂單
-    </div>
-
-    <div
-      class="stat-value"
-      id="monthly-orders"
-    >
-      0
-    </div>
-
-  </div>
-
-  <!-- 本月營收 -->
-  <div class="card">
-
-    <div class="stat-title">
-      本月營收
-    </div>
-
-    <div
-      class="stat-value"
-      id="monthly-revenue"
-    >
-      $0
-    </div>
-
-  </div>
-
-  <!-- 進行中訂單 -->
-  <div class="card">
-
-    <div class="stat-title">
-      進行中訂單
-    </div>
-
-    <div
-      class="stat-value"
-      id="active-count"
-    >
-      0
-    </div>
-
-  </div>
-
-  <!-- 今日表演 -->
-  <div class="card">
-
-    <div class="stat-title">
-      今日表演
-    </div>
-
-    <div id="today-performance">
-      無
-    </div>
-
-  </div>
-
-</div>
-
-<div
-  class="card"
-  style="margin-top:30px;"
->
-  <h2 class="section-warn">
-    ⚠️ 庫存不足警示
-  </h2>
-
-  <div id="stock-warning"></div>
-</div>
-
-<div
-  class="card"
-  style="margin-top:30px;"
->
-  <h2 class="section-return">
-    即將歸還
-  </h2>
-
-  <div id="return-list"></div>
-</div>
-
-<!-- 待出貨 -->
-<div
-  class="card"
-  style="margin-top:30px;"
->
-
-  <h2 class="section-ship">
-    待出貨訂單
-  </h2>
-
-  <div id="shipping-list"></div>
-
-</div>
-
-<script>
-
-const activeOrders =
-  JSON.parse(
-    localStorage.getItem(
-      "activeOrders"
-    )
-  ) || [];
-
-document.getElementById(
-  "active-count"
-).innerText =
-  activeOrders.length;
-
-// 本月訂單數
-document.getElementById(
-  "monthly-orders"
-).innerText =
-  activeOrders.length;
-
-// 假營收
-const revenue =
-  activeOrders.length * 5000;
-
-document.getElementById(
-  "monthly-revenue"
-).innerText =
-  `$${revenue}`;
-
-// 今日表演
-const today =
-  new Date().toDateString();
-
-const todayPerformance =
-  activeOrders.find(order => {
-
-    return order.items.some(item => {
-
-      return new Date(
-        item.performanceDate
-      ).toDateString() === today;
-
-    });
-
-  });
-
-if(todayPerformance){
-
-  document.getElementById(
-    "today-performance"
-  ).innerText =
-    `訂單 ${todayPerformance.id}`;
-
-}
-
-// 待出貨
-const shippingList =
-  document.getElementById(
-    "shipping-list"
-  );
-
-const shippingOrders =
-  activeOrders.filter(
-    order =>
-      order.status === "待出貨"
-  );
-
-if(shippingOrders.length === 0){
-
-  shippingList.innerHTML =
-    "<p>目前沒有待出貨訂單</p>";
-
-}else{
-
-  shippingOrders.forEach(order => {
-
-    const div =
-      document.createElement("div");
-
-    div.className =
-      "list-item";
-
-    div.innerHTML = `
-
-      訂單編號：
-      ${order.id}<br>
-
-      狀態：
-      ${order.status}
-
-    `;
-
-    shippingList.appendChild(div);
-
-  });
-
-}
-
-const inventory = [
-
-  {
-    name:"敦煌飛天舞服",
-
-    sizes:{
-      S:10,
-      M:3,
-      L:1
-    }
-  },
-
-  {
-    name:"原民羽飾套裝",
-
-    sizes:{
-      S:0,
-      M:2,
-      L:5
-    }
-  }
-
-];
-
-const warningDiv =
-  document.getElementById(
-    "stock-warning"
-  );
-
-inventory.forEach(product => {
-
-  Object.entries(
-    product.sizes
-  ).forEach(([size,qty]) => {
-
-    if(qty <= 2){
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        "list-item";
-
-      div.innerHTML = `
-
-        ${product.name}
-        ｜${size} 尺寸
-
-        <br>
-
-        剩餘：
-        ${qty}
-
-      `;
-
-      warningDiv.appendChild(div);
-
-    }
-
-  });
-
-});
-
-if(
-  warningDiv.innerHTML === ""
-){
-
-  warningDiv.innerHTML =
-    "<p>目前庫存充足</p>";
-
-}
-
-const returnList =
-  document.getElementById(
-    "return-list"
-  );
-
-const now = new Date();
-
-activeOrders.forEach(order => {
-
-  order.items.forEach(item => {
-
-    const performance =
-      new Date(
-        item.performanceDate
-      );
-
-    // N天後歸還
-    const returnDate =
-      new Date(performance);
-
-    returnDate.setDate(
-      returnDate.getDate() + 3
+  <script>
+    const activeOrders = JSON.parse(localStorage.getItem("activeOrders") || "[]");
+
+    document.getElementById("active-count").textContent = activeOrders.length;
+    document.getElementById("monthly-orders").textContent = activeOrders.length;
+    document.getElementById("monthly-revenue").textContent = `$${(activeOrders.length * 5000).toLocaleString()}`;
+
+    const today = new Date().toDateString();
+    const todayPerformance = activeOrders.find(order =>
+      order.items?.some(item =>
+        item.performanceDate && new Date(item.performanceDate).toDateString() === today
+      )
     );
-
-    const diffTime =
-      returnDate - now;
-
-    const diffDays =
-      Math.ceil(
-        diffTime /
-        (1000 * 60 * 60 * 24)
-      );
-
-    // 3天內顯示
-    if(
-      diffDays >= 0 &&
-      diffDays <= 3
-    ){
-
-      const div =
-        document.createElement("div");
-
-      div.className =
-        "list-item";
-
-      div.innerHTML = `
-
-        訂單：
-        ${order.id}<br>
-
-        品項：
-        ${item.productName}<br>
-
-        歸還日：
-        ${returnDate
-          .toLocaleDateString()}<br>
-
-        剩餘：
-        ${diffDays} 天
-
-      `;
-
-      returnList.appendChild(div);
-
+    if (todayPerformance) {
+      document.getElementById("today-performance").textContent = `訂單 ${todayPerformance.id}`;
     }
 
-  });
+    const shippingList = document.getElementById("shipping-list");
+    const shippingOrders = activeOrders.filter(o => o.status === "待出貨");
+    if (shippingOrders.length === 0) {
+      shippingList.innerHTML = '<p class="empty-msg">目前沒有待出貨訂單</p>';
+    } else {
+      shippingOrders.forEach(order => {
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `訂單編號：${order.id}<br>狀態：${order.status}`;
+        shippingList.appendChild(div);
+      });
+    }
 
-});
+    const inventory = [
+      { name: "敦煌飛天舞服", sizes: { S: 10, M: 3, L: 1 } },
+      { name: "原民羽飾套裝", sizes: { S: 0, M: 2, L: 5 } }
+    ];
+    const warningDiv = document.getElementById("stock-warning");
+    inventory.forEach(product => {
+      Object.entries(product.sizes).forEach(([size, qty]) => {
+        if (qty <= 2) {
+          const div = document.createElement("div");
+          div.className = "list-item";
+          div.innerHTML = `${product.name}｜${size} 尺寸<br>剩餘：${qty}`;
+          warningDiv.appendChild(div);
+        }
+      });
+    });
+    if (!warningDiv.innerHTML) warningDiv.innerHTML = '<p class="empty-msg">目前庫存充足</p>';
 
-if(
-  returnList.innerHTML === ""
-){
+    const returnList = document.getElementById("return-list");
+    const now = new Date();
+    activeOrders.forEach(order => {
+      (order.items || []).forEach(item => {
+        if (!item.performanceDate) return;
+        const returnDate = new Date(item.performanceDate);
+        returnDate.setDate(returnDate.getDate() + 3);
+        const diffDays = Math.ceil((returnDate - now) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays <= 3) {
+          const div = document.createElement("div");
+          div.className = "list-item";
+          div.innerHTML = `訂單：${order.id}<br>品項：${item.productName}<br>歸還日：${returnDate.toLocaleDateString("zh-TW")}<br>剩餘：${diffDays} 天`;
+          returnList.appendChild(div);
+        }
+      });
+    });
+    if (!returnList.innerHTML) returnList.innerHTML = '<p class="empty-msg">目前沒有即將歸還訂單</p>';
+  </script>
 
-  returnList.innerHTML =
-    "<p>目前沒有即將歸還訂單</p>";
-
-}
-
-</script>
-
-</div>
-
+  <script type="module">
+    import { mountErpShell } from "./components/erp-app.js";
+    mountErpShell("dashboard");
+  </script>
 </body>
 </html>

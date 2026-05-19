@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>訂單已送出 · 舞韻</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="styles/erp-layout.css" />
+</head>
+<body class="erp-body">
+  <div id="erp-stage" aria-hidden="true"></div>
+  <div class="sidebar-overlay" id="erpSidebarOverlay"></div>
+  <div class="app">
+    <div id="erp-sidebar"></div>
+    <main class="main">
+      <header class="header erp-page-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="erpMenuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="greeting">訂單 <span>已送出</span></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <article class="erp-card success-panel">
+          <div class="success-icon">✓</div>
+          <h1>訂單已送出</h1>
+          <p>感謝您的租借申請，我們將盡快與您聯繫確認檔期與出貨。</p>
+          <div class="order-id-pill" id="orderIdPill">—</div>
+          <div class="btn-row" style="justify-content:center">
+            <a href="index.html" class="btn btn-ghost">返回首頁</a>
+            <a href="dashboard.html" class="btn btn-primary">查看 ERP 後台</a>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const id = sessionStorage.getItem("lastOrderId");
+    if (id) document.getElementById("orderIdPill").textContent = `訂單編號 #${id}`;
+  </script>
+  <script type="module">
+    import { mountErpShell } from "./components/erp-app.js";
+    mountErpShell("");
+  </script>
+</body>
+</html>

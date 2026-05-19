@@ -3,170 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>進行中訂單｜舞韻</title>
-  <link rel="stylesheet" href="./styles/erp-layout.css" />
-  <style>
-    #orders p {
-      color: #94a3b8;
-      padding: 24px 0;
-    }
-
-    .card h3 {
-      margin: 0 0 8px;
-      color: #2dd4bf;
-    }
-
-    .order-meta {
-      font-size: 0.9rem;
-      color: #cbd5e1;
-      margin-bottom: 16px;
-    }
-
-    .status-select {
-      margin-top: 12px;
-      min-width: 160px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: #334155;
-    }
-
-    .order-items {
-      margin: 0;
-      padding-left: 20px;
-      color: #e2e8f0;
-      line-height: 1.8;
-    }
-  </style>
+  <title>進行中訂單 · 舞韻 ERP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="styles/erp-layout.css" />
 </head>
-<body>
+<body class="erp-body">
+  <div id="erp-stage" aria-hidden="true"></div>
+  <div class="sidebar-overlay" id="erpSidebarOverlay"></div>
+  <div class="app">
+    <div id="erp-sidebar"></div>
+    <main class="main">
+      <header class="header erp-page-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="erpMenuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="greeting">進行中 <span>訂單</span></div>
+            <div class="header-date" id="erpHeaderDate"></div>
+          </div>
+        </div>
+      </header>
 
-<div class="sidebar">
-
-  <div class="logo">
-    舞韻 ERP
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">進行中訂單</h1>
+            <p class="page-desc">管理待確認、出貨與歸還中的租借訂單</p>
+          </div>
+        </div>
+        <div id="orders"></div>
+      </div>
+    </main>
   </div>
 
-  <a class="nav-link" href="dashboard.html">Dashboard</a>
+  <script>
+    const orders = JSON.parse(localStorage.getItem("activeOrders") || "[]");
+    const ordersDiv = document.getElementById("orders");
 
-  <a class="nav-link" href="active-orders.html">進行中訂單</a>
-
-  <a class="nav-link" href="history-orders.html">歷史訂單</a>
-
-  <a class="nav-link" href="calendar.html">庫存行事曆</a>
-
-</div>
-
-<div class="main">
-  <h1 class="page-title">進行中訂單</h1>
-  <div id="orders"></div>
-</div>
-
-<script>
-const orders = JSON.parse(
-  localStorage.getItem("activeOrders")
-) || [];
-
-const ordersDiv = document.getElementById("orders");
-
-if (orders.length === 0) {
-  ordersDiv.innerHTML = "<p>目前沒有進行中訂單</p>";
-} else {
-  orders.forEach(order => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const created = order.createdAt
-      ? new Date(order.createdAt).toLocaleString("zh-TW")
-      : "—";
-
-    const itemsHtml = (order.items || [])
-      .map(item => {
-        const name = item.productName || "品項";
-        const size = item.size ? ` · ${item.size}` : "";
-        const qty = item.quantity ?? 1;
-        return `<li>${name}${size} × ${qty}</li>`;
-      })
-      .join("");
-
-    const status = order.status || "待確認";
-
-    card.innerHTML = `
-      <h3>訂單 #${order.id}</h3>
-      <p class="order-meta">建立時間：${created}</p>
-      <select class="status-select" onchange="updateStatus('${order.id}', this.value)">
-        <option value="待確認" ${status === "待確認" ? "selected" : ""}>待確認</option>
-        <option value="待處理" ${status === "待處理" ? "selected" : ""}>待處理</option>
-        <option value="已出貨" ${status === "已出貨" ? "selected" : ""}>已出貨</option>
-        <option value="已歸還" ${status === "已歸還" ? "selected" : ""}>已歸還</option>
-        <option value="完成" ${status === "完成" ? "selected" : ""}>完成</option>
-      </select>
-      <ul class="order-items">${itemsHtml || "<li>（無品項）</li>"}</ul>
-    `;
-
-    ordersDiv.appendChild(card);
-  });
-}
-
-window.updateStatus =
-function(id, newStatus){
-
-  const orders =
-    JSON.parse(
-      localStorage.getItem(
-        "activeOrders"
-      )
-    ) || [];
-
-  const targetOrder =
-    orders.find(
-      order => order.id == id
-    );
-
-  if(targetOrder){
-
-    targetOrder.status =
-      newStatus;
-
-    if(newStatus === "完成"){
-
-      const historyOrders =
-        JSON.parse(
-          localStorage.getItem(
-            "historyOrders"
-          )
-        ) || [];
-
-      historyOrders.push(targetOrder);
-
-      localStorage.setItem(
-        "historyOrders",
-        JSON.stringify(historyOrders)
-      );
-
-      const activeOnly =
-        orders.filter(
-          order => order.id != id
-        );
-
-      localStorage.setItem(
-        "activeOrders",
-        JSON.stringify(activeOnly)
-      );
-
+    if (orders.length === 0) {
+      ordersDiv.innerHTML = '<p class="empty-msg">目前沒有進行中訂單</p>';
     } else {
-
-      localStorage.setItem(
-        "activeOrders",
-        JSON.stringify(orders)
-      );
-
+      orders.forEach(order => {
+        const card = document.createElement("article");
+        card.className = "erp-card order-card";
+        const created = order.createdAt
+          ? new Date(order.createdAt).toLocaleString("zh-TW")
+          : "—";
+        const itemsHtml = (order.items || [])
+          .map(item => {
+            const name = item.productName || "品項";
+            const size = item.size ? ` · ${item.size}` : "";
+            return `<li>${name}${size} × ${item.quantity ?? 1}</li>`;
+          })
+          .join("");
+        const status = order.status || "待確認";
+        card.innerHTML = `
+          <h3>訂單 #${order.id}</h3>
+          <p class="order-meta">建立時間：${created}</p>
+          <select class="status-select erp-field select" onchange="updateStatus('${order.id}', this.value)">
+            <option value="待確認" ${status === "待確認" ? "selected" : ""}>待確認</option>
+            <option value="待處理" ${status === "待處理" ? "selected" : ""}>待處理</option>
+            <option value="待出貨" ${status === "待出貨" ? "selected" : ""}>待出貨</option>
+            <option value="已出貨" ${status === "已出貨" ? "selected" : ""}>已出貨</option>
+            <option value="已歸還" ${status === "已歸還" ? "selected" : ""}>已歸還</option>
+            <option value="完成" ${status === "完成" ? "selected" : ""}>完成</option>
+          </select>
+          <ul class="order-items">${itemsHtml || "<li>（無品項）</li>"}</ul>
+          <div class="btn-row">
+            <a href="calendar.html" class="btn btn-ghost btn-sm">查看行事曆</a>
+          </div>
+        `;
+        ordersDiv.appendChild(card);
+      });
     }
 
-  }
+    window.updateStatus = function (id, newStatus) {
+      const list = JSON.parse(localStorage.getItem("activeOrders") || "[]");
+      const targetOrder = list.find(order => order.id == id);
+      if (!targetOrder) return;
+      targetOrder.status = newStatus;
+      if (newStatus === "完成") {
+        const historyOrders = JSON.parse(localStorage.getItem("historyOrders") || "[]");
+        historyOrders.push(targetOrder);
+        localStorage.setItem("historyOrders", JSON.stringify(historyOrders));
+        localStorage.setItem(
+          "activeOrders",
+          JSON.stringify(list.filter(order => order.id != id))
+        );
+      } else {
+        localStorage.setItem("activeOrders", JSON.stringify(list));
+      }
+      location.reload();
+    };
+  </script>
 
-  location.reload();
-
-};
-</script>
-
+  <script type="module">
+    import { mountErpShell } from "./components/erp-app.js";
+    mountErpShell("active");
+  </script>
 </body>
 </html>

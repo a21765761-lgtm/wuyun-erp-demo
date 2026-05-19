@@ -3,84 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>歷史訂單｜舞韻</title>
-  <link rel="stylesheet" href="./styles/erp-layout.css" />
-  <style>
-    #history-list p { color: #94a3b8; padding: 24px 0; }
-    .card h3 { margin: 0 0 8px; color: #2dd4bf; }
-    .order-meta { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 12px; }
-    .status-done {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(110, 231, 183, 0.15);
-      color: #6ee7b7;
-      font-size: 0.8rem;
-    }
-    .order-items { margin: 12px 0 0; padding-left: 20px; color: #e2e8f0; line-height: 1.8; }
-  </style>
+  <title>歷史訂單 · 舞韻 ERP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="styles/erp-layout.css" />
 </head>
-<body>
+<body class="erp-body">
+  <div id="erp-stage" aria-hidden="true"></div>
+  <div class="sidebar-overlay" id="erpSidebarOverlay"></div>
+  <div class="app">
+    <div id="erp-sidebar"></div>
+    <main class="main">
+      <header class="header erp-page-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="erpMenuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="greeting">歷史 <span>訂單</span></div>
+            <div class="header-date" id="erpHeaderDate"></div>
+          </div>
+        </div>
+      </header>
 
-<div class="sidebar">
-
-  <div class="logo">
-    舞韻 ERP
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">歷史訂單</h1>
+            <p class="page-desc">已完成訂單紀錄與歸檔</p>
+          </div>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </main>
   </div>
 
-  <a class="nav-link" href="dashboard.html">Dashboard</a>
+  <script>
+    const historyOrders = JSON.parse(localStorage.getItem("historyOrders") || "[]");
+    const list = document.getElementById("history-list");
 
-  <a class="nav-link" href="active-orders.html">進行中訂單</a>
+    if (historyOrders.length === 0) {
+      list.innerHTML = '<p class="empty-msg">目前沒有歷史訂單</p>';
+    } else {
+      historyOrders.forEach(order => {
+        const card = document.createElement("article");
+        card.className = "erp-card order-card";
+        const itemsHtml = (order.items || [])
+          .map(item => {
+            const name = item.productName || "品項";
+            const size = item.size ? ` · ${item.size}` : "";
+            return `<li>${name}${size} × ${item.quantity ?? 1}</li>`;
+          })
+          .join("");
+        card.innerHTML = `
+          <h3>訂單 #${order.id} <span class="status-done">${order.status || "完成"}</span></h3>
+          <p class="order-meta">建立時間：${
+            order.createdAt
+              ? new Date(order.createdAt).toLocaleString("zh-TW")
+              : "—"
+          }</p>
+          <ul class="order-items">${itemsHtml || "<li>（無品項）</li>"}</ul>
+        `;
+        list.appendChild(card);
+      });
+    }
+  </script>
 
-  <a class="nav-link" href="history-orders.html">歷史訂單</a>
-
-  <a class="nav-link" href="calendar.html">庫存行事曆</a>
-
-</div>
-
-<div class="main">
-  <h1 class="page-title">歷史訂單</h1>
-  <div id="history-list"></div>
-</div>
-
-<script>
-const historyOrders = JSON.parse(
-  localStorage.getItem("historyOrders")
-) || [];
-
-const list = document.getElementById("history-list");
-
-if (historyOrders.length === 0) {
-  list.innerHTML = "<p>目前沒有歷史訂單</p>";
-} else {
-  historyOrders.forEach(order => {
-    const div = document.createElement("div");
-    div.className = "card";
-
-    const itemsHtml = (order.items || [])
-      .map(item => {
-        const name = item.productName || "品項";
-        const size = item.size ? ` · ${item.size}` : "";
-        const qty = item.quantity ?? 1;
-        return `<li>${name}${size} × ${qty}</li>`;
-      })
-      .join("");
-
-    div.innerHTML = `
-      <h3>訂單 #${order.id} <span class="status-done">${order.status || "完成"}</span></h3>
-      <p class="order-meta">
-        建立時間：
-        ${order.createdAt
-          ? new Date(order.createdAt).toLocaleString("zh-TW")
-          : "—"}
-      </p>
-      <ul class="order-items">${itemsHtml || "<li>（無品項）</li>"}</ul>
-    `;
-
-    list.appendChild(div);
-  });
-}
-</script>
-
+  <script type="module">
+    import { mountErpShell } from "./components/erp-app.js";
+    mountErpShell("history");
+  </script>
 </body>
 </html>

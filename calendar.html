@@ -3,258 +3,164 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>檔期日曆｜舞韻</title>
-  <link rel="stylesheet" href="./styles/erp-layout.css" />
-  <style>
-    .hint {
-      color: #94a3b8;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .controls label {
-      font-size: 0.85rem;
-      color: #cbd5e1;
-    }
-
-    .controls select {
-      display: block;
-      margin-top: 6px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid #334155;
-      background: #334155;
-      color: white;
-      font-family: inherit;
-      min-width: 120px;
-    }
-
-    .legend {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 16px;
-      font-size: 0.85rem;
-    }
-
-    .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 4px;
-    }
-
-    .dot.busy { background: #f87171; }
-    .dot.free { background: #34d399; }
-
-    #calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-    }
-
-    .day-cell {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 12px 10px;
-      min-height: 72px;
-    }
-
-    .day-cell.occupied {
-      border-color: rgba(248, 113, 113, 0.5);
-      background: rgba(248, 113, 113, 0.08);
-    }
-
-    .day-cell .date {
-      font-weight: 600;
-      color: #e2e8f0;
-      margin-bottom: 8px;
-    }
-
-    .status {
-      font-size: 0.75rem;
-    }
-
-    .status.busy {
-      color: #fca5a5;
-    }
-
-    .status.free {
-      color: #6ee7b7;
-    }
-
-    .weekday {
-      text-align: center;
-      font-size: 0.75rem;
-      color: #64748b;
-      padding-bottom: 4px;
-    }
-  </style>
+  <title>庫存行事曆 · 舞韻 ERP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="styles/erp-layout.css" />
 </head>
-<body>
+<body class="erp-body">
+  <div id="erp-stage" aria-hidden="true"></div>
+  <div class="sidebar-overlay" id="erpSidebarOverlay"></div>
+  <div class="app">
+    <div id="erp-sidebar"></div>
+    <main class="main">
+      <header class="header erp-page-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="erpMenuToggle" type="button" aria-label="選單">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="greeting">庫存 <span>行事曆</span></div>
+            <div class="header-date" id="erpHeaderDate"></div>
+          </div>
+        </div>
+      </header>
 
-<div class="sidebar">
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">庫存行事曆</h1>
+            <p class="page-desc">顯示檔期占用狀況（進行中訂單 + 範例訂單，已完成不計入）</p>
+          </div>
+          <div class="page-actions">
+            <a href="dashboard.html" class="btn btn-ghost">返回 Dashboard</a>
+          </div>
+        </div>
 
-  <div class="logo">
-    舞韻 ERP
-  </div>
+        <article class="erp-card">
+          <div class="calendar-controls">
+            <label>
+              年
+              <select id="yearSelect"></select>
+            </label>
+            <label>
+              月
+              <select id="monthSelect"></select>
+            </label>
+          </div>
 
-  <a class="nav-link" href="dashboard.html">Dashboard</a>
+          <div class="calendar-legend">
+            <span><i class="dot busy"></i> 已占用</span>
+            <span><i class="dot free"></i> 可預約</span>
+          </div>
 
-  <a class="nav-link" href="active-orders.html">進行中訂單</a>
-
-  <a class="nav-link" href="history-orders.html">歷史訂單</a>
-
-  <a class="nav-link" href="calendar.html">庫存行事曆</a>
-
-</div>
-
-<div class="main">
-  <h1 class="page-title">檔期日曆</h1>
-  <p class="hint">顯示：哪些日期被占用（進行中訂單 + 範例訂單，已完成不計入）</p>
-
-  <div class="controls">
-    <label>
-      年
-      <select id="yearSelect"></select>
-    </label>
-    <label>
-      月
-      <select id="monthSelect"></select>
-    </label>
-  </div>
-
-  <div class="legend">
-    <span><i class="dot busy"></i> 已占用</span>
-    <span><i class="dot free"></i> 可預約</span>
-  </div>
-
-  <div id="weekdays"></div>
-  <div id="calendar"></div>
-</div>
-
-<script type="module">
-import { orders } from "./data/orders.js";
-
-function calculateOccupiedDates(performanceDate, nDays) {
-  const performance = new Date(performanceDate + "T12:00:00");
-  const start = new Date(performance);
-  start.setDate(start.getDate() - nDays);
-  const end = new Date(performance);
-  end.setDate(end.getDate() + nDays);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
-  return { start, end };
-}
-
-function collectOrders() {
-  const stored = JSON.parse(localStorage.getItem("activeOrders") || "[]")
-    .filter(o => o.status !== "完成");
-
-  const fromStorage = stored
-    .map(order => {
-      const perf = order.items?.find(i => i.performanceDate)?.performanceDate;
-      if (!perf) return null;
-      return {
-        id: order.id,
-        performanceDate: perf,
-        nDays: order.nDays ?? 3,
-        status: order.status
-      };
-    })
-    .filter(Boolean);
-
-  return [
-    ...orders.filter(o => o.status !== "完成"),
-    ...fromStorage
-  ];
-}
-
-function isDayOccupied(year, month, day, allOrders) {
-  const date = new Date(year, month - 1, day, 12, 0, 0);
-
-  return allOrders.some(order => {
-    if (order.status === "完成") return false;
-    const { start, end } = calculateOccupiedDates(
-      order.performanceDate,
-      order.nDays ?? 3
-    );
-    return date >= start && date <= end;
-  });
-}
-
-const yearSelect = document.getElementById("yearSelect");
-const monthSelect = document.getElementById("monthSelect");
-const calendar = document.getElementById("calendar");
-const weekdaysEl = document.getElementById("weekdays");
-
-const now = new Date();
-for (let y = now.getFullYear(); y <= now.getFullYear() + 1; y++) {
-  yearSelect.innerHTML += `<option value="${y}">${y} 年</option>`;
-}
-for (let m = 1; m <= 12; m++) {
-  monthSelect.innerHTML += `<option value="${m}">${m} 月</option>`;
-}
-yearSelect.value = String(now.getFullYear());
-monthSelect.value = String(now.getMonth() + 1);
-
-function renderCalendar() {
-  const year = Number(yearSelect.value);
-  const month = Number(monthSelect.value);
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const allOrders = collectOrders();
-
-  weekdaysEl.innerHTML = ["日", "一", "二", "三", "四", "五", "六"]
-    .map(d => `<div class="weekday">${d}</div>`)
-    .join("");
-  weekdaysEl.style.display = "grid";
-  weekdaysEl.style.gridTemplateColumns = "repeat(7, 1fr)";
-  weekdaysEl.style.gap = "10px";
-
-  calendar.innerHTML = "";
-
-  const firstWeekday = new Date(year, month - 1, 1).getDay();
-  for (let i = 0; i < firstWeekday; i++) {
-    const pad = document.createElement("div");
-    calendar.appendChild(pad);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const occupied = isDayOccupied(year, month, day, allOrders);
-    const statusText = occupied
-      ? '<div class="status busy">已占用</div>'
-      : '<div class="status free">可預約</div>';
-
-    const div = document.createElement("div");
-    div.className = "day-cell" + (occupied ? " occupied" : "");
-
-    div.innerHTML = `
-      <div class="date">
-        ${month}/${day}
+          <div id="weekdays"></div>
+          <div id="calendar"></div>
+        </article>
       </div>
-      ${statusText}
-    `;
+    </main>
+  </div>
 
-    calendar.appendChild(div);
-  }
-}
+  <script type="module">
+    import { orders } from "./data/orders.js";
+    import { mountErpShell } from "./components/erp-app.js";
+    mountErpShell("calendar");
 
-yearSelect.addEventListener("change", renderCalendar);
-monthSelect.addEventListener("change", renderCalendar);
-renderCalendar();
-</script>
+    function calculateOccupiedDates(performanceDate, nDays) {
+      const performance = new Date(performanceDate + "T12:00:00");
+      const start = new Date(performance);
+      start.setDate(start.getDate() - nDays);
+      const end = new Date(performance);
+      end.setDate(end.getDate() + nDays);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
 
+    function collectOrders() {
+      const stored = JSON.parse(localStorage.getItem("activeOrders") || "[]")
+        .filter(o => o.status !== "完成");
+
+      const fromStorage = stored
+        .map(order => {
+          const perf = order.items?.find(i => i.performanceDate)?.performanceDate;
+          if (!perf) return null;
+          return {
+            id: order.id,
+            performanceDate: perf,
+            nDays: order.nDays ?? 3,
+            status: order.status
+          };
+        })
+        .filter(Boolean);
+
+      return [
+        ...orders.filter(o => o.status !== "完成"),
+        ...fromStorage
+      ];
+    }
+
+    function isDayOccupied(year, month, day, allOrders) {
+      const date = new Date(year, month - 1, day, 12, 0, 0);
+      return allOrders.some(order => {
+        if (order.status === "完成") return false;
+        const { start, end } = calculateOccupiedDates(
+          order.performanceDate,
+          order.nDays ?? 3
+        );
+        return date >= start && date <= end;
+      });
+    }
+
+    const yearSelect = document.getElementById("yearSelect");
+    const monthSelect = document.getElementById("monthSelect");
+    const calendar = document.getElementById("calendar");
+    const weekdaysEl = document.getElementById("weekdays");
+
+    const now = new Date();
+    for (let y = now.getFullYear(); y <= now.getFullYear() + 1; y++) {
+      yearSelect.innerHTML += `<option value="${y}">${y} 年</option>`;
+    }
+    for (let m = 1; m <= 12; m++) {
+      monthSelect.innerHTML += `<option value="${m}">${m} 月</option>`;
+    }
+    yearSelect.value = String(now.getFullYear());
+    monthSelect.value = String(now.getMonth() + 1);
+
+    function renderCalendar() {
+      const year = Number(yearSelect.value);
+      const month = Number(monthSelect.value);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const allOrders = collectOrders();
+
+      weekdaysEl.innerHTML = ["日", "一", "二", "三", "四", "五", "六"]
+        .map(d => `<div class="weekday">${d}</div>`)
+        .join("");
+
+      calendar.innerHTML = "";
+
+      const firstWeekday = new Date(year, month - 1, 1).getDay();
+      for (let i = 0; i < firstWeekday; i++) {
+        calendar.appendChild(document.createElement("div"));
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const occupied = isDayOccupied(year, month, day, allOrders);
+        const div = document.createElement("div");
+        div.className = "day-cell" + (occupied ? " occupied" : "");
+        div.innerHTML = `
+          <div class="date">${month}/${day}</div>
+          <div class="status ${occupied ? "busy" : "free"}">${occupied ? "已占用" : "可預約"}</div>
+        `;
+        calendar.appendChild(div);
+      }
+    }
+
+    yearSelect.addEventListener("change", renderCalendar);
+    monthSelect.addEventListener("change", renderCalendar);
+    renderCalendar();
+  </script>
 </body>
 </html>
