@@ -7,7 +7,7 @@
     content="width=device-width, initial-scale=1.0"/>
 
   <title>舞韻 ERP Dashboard</title>
-  <link rel="stylesheet" href="styles/erp-layout.css" />
+  <link rel="stylesheet" href="./styles/erp-layout.css" />
   <style>
     .section-warn { color: #f87171; }
     .section-return { color: #facc15; }
@@ -17,9 +17,23 @@
 
 <body>
 
-<div id="sidebar"></div>
+<div class="sidebar">
 
-<main class="main">
+  <div class="logo">
+    舞韻 ERP
+  </div>
+
+  <a class="nav-link" href="dashboard.html">Dashboard</a>
+
+  <a class="nav-link" href="active-orders.html">進行中訂單</a>
+
+  <a class="nav-link" href="history-orders.html">歷史訂單</a>
+
+  <a class="nav-link" href="calendar.html">庫存行事曆</a>
+
+</div>
+
+<div class="main">
 
 <h1 class="page-title">舞韻 ERP Dashboard</h1>
 
@@ -375,14 +389,7 @@ if(
 
 </script>
 
-<script type="module">
-import { renderSidebar } from "./components/sidebar.js";
-
-document.getElementById("sidebar").innerHTML =
-  renderSidebar();
-</script>
-
-</main>
+</div>
 
 </body>
 </html>

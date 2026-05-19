@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>進行中訂單｜舞韻</title>
-  <link rel="stylesheet" href="styles/erp-layout.css" />
+  <link rel="stylesheet" href="./styles/erp-layout.css" />
   <style>
     #orders p {
       color: #94a3b8;
@@ -39,12 +39,26 @@
 </head>
 <body>
 
-<div id="sidebar"></div>
+<div class="sidebar">
 
-<main class="main">
+  <div class="logo">
+    舞韻 ERP
+  </div>
+
+  <a class="nav-link" href="dashboard.html">Dashboard</a>
+
+  <a class="nav-link" href="active-orders.html">進行中訂單</a>
+
+  <a class="nav-link" href="history-orders.html">歷史訂單</a>
+
+  <a class="nav-link" href="calendar.html">庫存行事曆</a>
+
+</div>
+
+<div class="main">
   <h1 class="page-title">進行中訂單</h1>
   <div id="orders"></div>
-</main>
+</div>
 
 <script>
 const orders = JSON.parse(
@@ -152,13 +166,6 @@ function(id, newStatus){
   location.reload();
 
 };
-</script>
-
-<script type="module">
-import { renderSidebar } from "./components/sidebar.js";
-
-document.getElementById("sidebar").innerHTML =
-  renderSidebar();
 </script>
 
 </body>
