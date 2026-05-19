@@ -416,6 +416,86 @@
 .dot.busy { background: var(--danger); }
 .dot.free { background: var(--success); }
 
+.dot.stock-ok { background: var(--success); }
+.dot.stock-low { background: var(--warn); }
+.dot.stock-tight { background: #f97316; }
+.dot.stock-out { background: var(--danger); }
+
+.section-desc {
+  margin: -8px 0 16px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.stock-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.stock-badge.stock-ok { background: var(--success-soft); color: var(--success); }
+.stock-badge.stock-low { background: rgba(251, 191, 36, 0.15); color: var(--warn); }
+.stock-badge.stock-tight { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.stock-badge.stock-out { background: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+
+.stock-row {
+  position: relative;
+}
+
+.calendar-pressure-grid .day-cell {
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+}
+
+.day-cell--selected {
+  border-color: rgba(45, 212, 191, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.25);
+}
+
+.day-cell--low { border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.06); }
+.day-cell--tight { border-color: rgba(249, 115, 22, 0.45); background: rgba(249, 115, 22, 0.08); }
+.day-cell--out { border-color: rgba(248, 113, 113, 0.45); background: rgba(248, 113, 113, 0.08); }
+
+.day-cell-summary {
+  font-size: 0.7rem;
+  color: var(--text-soft);
+  margin-top: 4px;
+}
+
+.day-cell-count {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.pressure-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.88rem;
+}
+
+.pressure-remaining {
+  color: var(--tiffany-bright);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .pressure-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
 #weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

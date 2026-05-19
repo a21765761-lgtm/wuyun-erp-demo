@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>庫存行事曆 · 舞韻 ERP</title>
+  <title>庫存壓力行事曆 · 舞韻 ERP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -22,7 +22,7 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
           <div>
-            <div class="greeting">庫存 <span>行事曆</span></div>
+            <div class="greeting">庫存 <span>壓力行事曆</span></div>
             <div class="header-date" id="erpHeaderDate"></div>
           </div>
         </div>
@@ -31,8 +31,8 @@
       <div class="content">
         <div class="page-head">
           <div>
-            <h1 class="page-title">庫存行事曆</h1>
-            <p class="page-desc">顯示檔期占用狀況（進行中訂單 + 範例訂單，已完成不計入）</p>
+            <h1 class="page-title">庫存壓力行事曆</h1>
+            <p class="page-desc">依日期顯示各款式、各尺寸的剩餘可租數量（非整體占用）</p>
           </div>
           <div class="page-actions">
             <a href="dashboard.html" class="btn btn-ghost">返回 Dashboard</a>
@@ -41,83 +41,43 @@
 
         <article class="erp-card">
           <div class="calendar-controls">
-            <label>
-              年
-              <select id="yearSelect"></select>
-            </label>
-            <label>
-              月
-              <select id="monthSelect"></select>
-            </label>
+            <label>年 <select id="yearSelect"></select></label>
+            <label>月 <select id="monthSelect"></select></label>
           </div>
 
           <div class="calendar-legend">
-            <span><i class="dot busy"></i> 已占用</span>
-            <span><i class="dot free"></i> 可預約</span>
+            <span><i class="dot stock-ok"></i> 充足</span>
+            <span><i class="dot stock-low"></i> 即將不足（≤3）</span>
+            <span><i class="dot stock-tight"></i> 緊張（≤1）</span>
+            <span><i class="dot stock-out"></i> 無可租</span>
           </div>
 
           <div id="weekdays"></div>
-          <div id="calendar"></div>
+          <div id="calendar" class="calendar-pressure-grid"></div>
+        </article>
+
+        <article class="erp-card" id="dayDetailCard">
+          <h2 class="section-title ship" id="dayDetailTitle">點選日期查看庫存明細</h2>
+          <div id="dayDetailList"><p class="empty-msg">請點選月曆上的日期</p></div>
         </article>
       </div>
     </main>
   </div>
 
   <script type="module">
-    import { orders } from "./data/orders.js";
     import { mountErpShell } from "./components/erp-app.js";
+    import { getDayPressureList, LOW_STOCK_THRESHOLD } from "./data/stock-service.js";
+
     mountErpShell("calendar");
-
-    function calculateOccupiedDates(performanceDate, nDays) {
-      const performance = new Date(performanceDate + "T12:00:00");
-      const start = new Date(performance);
-      start.setDate(start.getDate() - nDays);
-      const end = new Date(performance);
-      end.setDate(end.getDate() + nDays);
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999);
-      return { start, end };
-    }
-
-    function collectOrders() {
-      const stored = JSON.parse(localStorage.getItem("activeOrders") || "[]")
-        .filter(o => o.status !== "完成");
-
-      const fromStorage = stored
-        .map(order => {
-          const perf = order.items?.find(i => i.performanceDate)?.performanceDate;
-          if (!perf) return null;
-          return {
-            id: order.id,
-            performanceDate: perf,
-            nDays: order.nDays ?? 3,
-            status: order.status
-          };
-        })
-        .filter(Boolean);
-
-      return [
-        ...orders.filter(o => o.status !== "完成"),
-        ...fromStorage
-      ];
-    }
-
-    function isDayOccupied(year, month, day, allOrders) {
-      const date = new Date(year, month - 1, day, 12, 0, 0);
-      return allOrders.some(order => {
-        if (order.status === "完成") return false;
-        const { start, end } = calculateOccupiedDates(
-          order.performanceDate,
-          order.nDays ?? 3
-        );
-        return date >= start && date <= end;
-      });
-    }
 
     const yearSelect = document.getElementById("yearSelect");
     const monthSelect = document.getElementById("monthSelect");
     const calendar = document.getElementById("calendar");
     const weekdaysEl = document.getElementById("weekdays");
+    const dayDetailList = document.getElementById("dayDetailList");
+    const dayDetailTitle = document.getElementById("dayDetailTitle");
+
+    let selectedDay = null;
 
     const now = new Date();
     for (let y = now.getFullYear(); y <= now.getFullYear() + 1; y++) {
@@ -129,37 +89,100 @@
     yearSelect.value = String(now.getFullYear());
     monthSelect.value = String(now.getMonth() + 1);
 
+    function worstLevel(rows) {
+      if (!rows.length) return "ok";
+      if (rows.some(r => r.remaining <= 0)) return "out";
+      if (rows.some(r => r.remaining <= 1)) return "tight";
+      if (rows.some(r => r.remaining <= LOW_STOCK_THRESHOLD)) return "low";
+      return "ok";
+    }
+
+    function renderDayDetail(year, month, day) {
+      const rows = getDayPressureList(year, month, day);
+      dayDetailTitle.textContent = `${year}/${month}/${day} 庫存明細`;
+
+      if (rows.length === 0) {
+        dayDetailList.innerHTML = '<p class="empty-msg">此日無明顯庫存壓力，各尺寸仍可正常租借</p>';
+        return;
+      }
+
+      dayDetailList.innerHTML = rows
+        .map(r => {
+          const name = r.isAccessory ? r.costumeName : `${r.costumeName} ${r.size}`;
+          return `
+            <div class="pressure-row stock-${r.level}">
+              <strong>${r.dateLabel}</strong>
+              <span>${name}</span>
+              <span class="pressure-remaining">剩餘 ${r.remaining} 件</span>
+              <span class="stock-badge stock-${r.level}">${r.label}</span>
+            </div>`;
+        })
+        .join("");
+    }
+
     function renderCalendar() {
       const year = Number(yearSelect.value);
       const month = Number(monthSelect.value);
       const daysInMonth = new Date(year, month, 0).getDate();
-      const allOrders = collectOrders();
 
       weekdaysEl.innerHTML = ["日", "一", "二", "三", "四", "五", "六"]
         .map(d => `<div class="weekday">${d}</div>`)
         .join("");
 
       calendar.innerHTML = "";
-
       const firstWeekday = new Date(year, month - 1, 1).getDay();
       for (let i = 0; i < firstWeekday; i++) {
         calendar.appendChild(document.createElement("div"));
       }
 
       for (let day = 1; day <= daysInMonth; day++) {
-        const occupied = isDayOccupied(year, month, day, allOrders);
-        const div = document.createElement("div");
-        div.className = "day-cell" + (occupied ? " occupied" : "");
+        const rows = getDayPressureList(year, month, day);
+        const level = worstLevel(rows);
+        const minRemaining = rows.length
+          ? Math.min(...rows.map(r => r.remaining))
+          : null;
+
+        const div = document.createElement("button");
+        div.type = "button";
+        div.className = `day-cell day-cell--${level}${selectedDay === day ? " day-cell--selected" : ""}`;
+
         div.innerHTML = `
           <div class="date">${month}/${day}</div>
-          <div class="status ${occupied ? "busy" : "free"}">${occupied ? "已占用" : "可預約"}</div>
+          <div class="day-cell-summary">${
+            rows.length === 0
+              ? "壓力低"
+              : `最低剩 ${minRemaining} 件`
+          }</div>
+          <div class="day-cell-count">${rows.length} 筆警示</div>
         `;
+
+        div.addEventListener("click", () => {
+          selectedDay = day;
+          renderDayDetail(year, month, day);
+          renderCalendar();
+        });
+
         calendar.appendChild(div);
+      }
+
+      if (selectedDay) {
+        renderDayDetail(year, month, selectedDay);
       }
     }
 
-    yearSelect.addEventListener("change", renderCalendar);
-    monthSelect.addEventListener("change", renderCalendar);
+    yearSelect.addEventListener("change", () => {
+      selectedDay = null;
+      dayDetailList.innerHTML = '<p class="empty-msg">請點選月曆上的日期</p>';
+      dayDetailTitle.textContent = "點選日期查看庫存明細";
+      renderCalendar();
+    });
+    monthSelect.addEventListener("change", () => {
+      selectedDay = null;
+      dayDetailList.innerHTML = '<p class="empty-msg">請點選月曆上的日期</p>';
+      dayDetailTitle.textContent = "點選日期查看庫存明細";
+      renderCalendar();
+    });
+
     renderCalendar();
   </script>
 </body>

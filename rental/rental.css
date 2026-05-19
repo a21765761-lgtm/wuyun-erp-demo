@@ -495,6 +495,57 @@
   cursor: not-allowed;
 }
 
+.size-opt {
+  flex-direction: column;
+  gap: 4px;
+  min-width: 52px;
+}
+
+.size-opt-stock {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.size-opt--out {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stock-hint strong {
+  color: var(--tiffany-bright);
+}
+
+.stock-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.stock-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.stock-badge.stock-ok { background: var(--success-soft); color: var(--success); }
+.stock-badge.stock-low { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.stock-badge.stock-tight { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.stock-badge.stock-out { background: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+
+.stock-alert-low {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: #fbbf24;
+}
+
+.rental-btn:disabled {
+  cursor: not-allowed;
+}
+
 .qty-val {
   font-size: 1.25rem;
   font-weight: 600;

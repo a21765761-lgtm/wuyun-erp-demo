@@ -27,12 +27,17 @@
 
   <div class="rental-bar" id="detailBar" hidden>
     <button type="button" class="rental-btn rental-btn-ghost" id="btnAddCart">加入購物車</button>
-          <a href="../cart.html" class="rental-btn rental-btn-primary">查看購物車</a>
+    <a href="cart.html" class="rental-btn rental-btn-primary">查看購物車</a>
   </div>
 
   <script type="module">
     import { getCostumeById } from "./data.js";
     import { addToCart } from "../data/cart.js";
+    import {
+      getRemainingStock,
+      getStockLevel,
+      LOW_STOCK_THRESHOLD
+    } from "../data/stock-service.js";
     import {
       renderShell, requireDate,
       getRentalContext, formatMoney
@@ -59,6 +64,7 @@
       showCart: true
     });
 
+    const ctx = getRentalContext();
     let selectedSize = costume.sizes[0];
     let quantity = 1;
 
@@ -66,20 +72,41 @@
     const bar = document.getElementById("detailBar");
     bar.hidden = false;
 
-    function getStockForSize(size) {
-      return costume.stock[size] ?? 0;
+    function getStockSnapshot(size) {
+      return getRemainingStock({
+        costumeId: costume.id,
+        size,
+        performanceDate: ctx.performanceDate,
+        nDays: ctx.nDays
+      });
     }
 
     function clampQuantity(q, size) {
-      const max = getStockForSize(size);
+      const max = getStockSnapshot(size).remaining;
       if (max <= 0) return 0;
       return Math.min(Math.max(1, q), max);
     }
 
+    function stockHintHtml(snap) {
+      const badge = `<span class="stock-badge stock-${snap.level}">${snap.label}</span>`;
+      if (snap.remaining <= 0) {
+        return `<p class="rental-hint stock-hint">剩餘 <strong>0</strong> 件 · 此尺寸暫不可租 ${badge}</p>`;
+      }
+      let html = `<p class="rental-hint stock-hint">剩餘可租 <strong>${snap.remaining}</strong> 件`;
+      html += ` <span class="stock-meta">（原始 ${snap.totalStock} · 已租 ${snap.rented}）</span> ${badge}`;
+      if (snap.remaining <= LOW_STOCK_THRESHOLD) {
+        html += `<p class="stock-alert-low">⚠ 低庫存警示：建議盡早下訂</p>`;
+      }
+      html += `</p>`;
+      return html;
+    }
+
     function render() {
       quantity = clampQuantity(quantity, selectedSize);
-      const stock = getStockForSize(selectedSize);
-      const atMax = quantity >= stock && stock > 0;
+      const snap = getStockSnapshot(selectedSize);
+      const atMax = quantity >= snap.remaining && snap.remaining > 0;
+      const outOfStock = snap.remaining <= 0;
+
       root.innerHTML = `
         <div class="detail-layout">
           <div class="detail-hero-visual ${costume.hue}">${costume.emoji}</div>
@@ -92,21 +119,29 @@
               </div>
             </div>
             <div class="rental-card">
+              <p class="rental-hint" style="margin-bottom:12px">檔期：${ctx.performanceDate} 前後 ${ctx.nDays} 天內計入已租數量</p>
               <div class="rental-field">
                 <label>選擇尺寸</label>
                 <div class="size-picker" id="sizePicker">
-                  ${costume.sizes.map(s => `
-                    <button type="button" class="size-opt ${s === selectedSize ? "active" : ""}" data-size="${s}">${s}</button>
-                  `).join("")}
+                  ${costume.sizes.map(s => {
+                    const sSnap = getStockSnapshot(s);
+                    const disabled = sSnap.remaining <= 0;
+                    return `
+                    <button type="button" class="size-opt ${s === selectedSize ? "active" : ""}${disabled ? " size-opt--out" : ""}"
+                      data-size="${s}" ${disabled ? "disabled" : ""}>
+                      ${s}
+                      <small class="size-opt-stock">${disabled ? "無" : sSnap.remaining}</small>
+                    </button>`;
+                  }).join("")}
                 </div>
-                <p class="rental-hint">庫存參考：${stock} 件${stock > 0 ? ` · 最多可選 ${stock} 件` : " · 暫無庫存"}</p>
+                ${stockHintHtml(snap)}
               </div>
               <div class="rental-field">
                 <label>數量</label>
                 <div class="qty-row">
-                  <button type="button" class="qty-btn" id="qtyMinus">−</button>
+                  <button type="button" class="qty-btn" id="qtyMinus" ${outOfStock ? "disabled" : ""}>−</button>
                   <span class="qty-val" id="qtyVal">${quantity}</span>
-                  <button type="button" class="qty-btn" id="qtyPlus"${atMax ? " disabled" : ""}>+</button>
+                  <button type="button" class="qty-btn" id="qtyPlus"${atMax || outOfStock ? " disabled" : ""}>+</button>
                 </div>
               </div>
               <p style="font-size:1.1rem;font-weight:600;color:var(--tiffany-bright)">
@@ -118,7 +153,11 @@
         </div>
       `;
 
-      document.querySelectorAll(".size-opt").forEach(btn => {
+      const addBtn = document.getElementById("btnAddCart");
+      addBtn.disabled = outOfStock;
+      addBtn.style.opacity = outOfStock ? "0.45" : "1";
+
+      document.querySelectorAll(".size-opt:not(:disabled)").forEach(btn => {
         btn.addEventListener("click", () => {
           selectedSize = btn.dataset.size;
           quantity = clampQuantity(quantity, selectedSize);
@@ -139,19 +178,18 @@
 
     function handleAddToCart() {
       quantity = clampQuantity(quantity, selectedSize);
-      const stock = getStockForSize(selectedSize);
+      const snap = getStockSnapshot(selectedSize);
 
-      if (stock <= 0 || quantity < 1 || quantity > stock) {
+      if (snap.remaining <= 0 || quantity < 1 || quantity > snap.remaining) {
         alert(
-          stock <= 0
-            ? "此尺寸目前無庫存，請選擇其他尺寸"
-            : `此尺寸最多可租借 ${stock} 件，請調整數量`
+          snap.remaining <= 0
+            ? "此尺寸剩餘可租為 0，請選擇其他尺寸或日期"
+            : `此尺寸剩餘可租 ${snap.remaining} 件，請調整數量`
         );
         render();
         return;
       }
 
-      const ctx = getRentalContext();
       const item = {
         productId: costume.id,
         productName: costume.name,
@@ -161,9 +199,9 @@
       };
 
       try {
-        addToCart(item, { maxQuantity: stock });
+        addToCart(item, { maxQuantity: snap.remaining });
       } catch {
-        alert(`此尺寸最多可租借 ${stock} 件，請調整數量`);
+        alert(`此尺寸剩餘可租 ${snap.remaining} 件，請調整數量`);
         render();
         return;
       }

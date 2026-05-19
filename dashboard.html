@@ -32,7 +32,7 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Dashboard</h1>
-            <p class="page-desc">掌握訂單、檔期與庫存全局</p>
+            <p class="page-desc">以「剩餘可租庫存」掌握營運全局</p>
           </div>
         </div>
 
@@ -44,8 +44,8 @@
           </a>
           <a href="calendar.html" class="quick-card">
             <span class="quick-card-icon">📅</span>
-            <strong>庫存行事曆</strong>
-            <span>查看檔期占用狀況</span>
+            <strong>庫存壓力行事曆</strong>
+            <span>依日查看剩餘可租數量</span>
           </a>
           <a href="history-orders.html" class="quick-card">
             <span class="quick-card-icon">✓</span>
@@ -56,26 +56,44 @@
 
         <div class="erp-grid">
           <article class="erp-card">
-            <div class="stat-title">本月訂單</div>
-            <div class="stat-value" id="monthly-orders">0</div>
-          </article>
-          <article class="erp-card">
-            <div class="stat-title">本月營收</div>
-            <div class="stat-value" id="monthly-revenue">$0</div>
-          </article>
-          <article class="erp-card">
             <div class="stat-title">進行中訂單</div>
             <div class="stat-value" id="active-count">0</div>
           </article>
           <article class="erp-card">
-            <div class="stat-title">今日表演</div>
-            <div class="stat-value" id="today-performance" style="font-size:1.25rem">無</div>
+            <div class="stat-title">低庫存 SKU</div>
+            <div class="stat-value" id="low-stock-count">0</div>
+          </article>
+          <article class="erp-card">
+            <div class="stat-title">即將售罄</div>
+            <div class="stat-value" id="sellout-count">0</div>
+          </article>
+          <article class="erp-card">
+            <div class="stat-title">配件警示</div>
+            <div class="stat-value" id="accessory-count">0</div>
           </article>
         </div>
 
         <article class="erp-card">
-          <h2 class="section-title warn">⚠️ 庫存不足警示</h2>
-          <div id="stock-warning"></div>
+          <h2 class="section-title warn">即將低庫存</h2>
+          <p class="section-desc">剩餘可租 1～3 件（今日檔期基準）</p>
+          <div id="low-stock-list"></div>
+        </article>
+
+        <article class="erp-card">
+          <h2 class="section-title return">熱門尺寸不足</h2>
+          <p class="section-desc">出租率 ≥ 50% 且剩餘 ≤ 5 件</p>
+          <div id="hot-size-list"></div>
+        </article>
+
+        <article class="erp-card">
+          <h2 class="section-title ship">即將售罄</h2>
+          <p class="section-desc">剩餘可租 ≤ 1 件</p>
+          <div id="sellout-list"></div>
+        </article>
+
+        <article class="erp-card">
+          <h2 class="section-title warn">配件不足提醒</h2>
+          <div id="accessory-list"></div>
         </article>
 
         <article class="erp-card">
@@ -91,22 +109,69 @@
     </main>
   </div>
 
-  <script>
+  <script type="module">
+    import { mountErpShell } from "./components/erp-app.js";
+    import {
+      getLowStockAlerts,
+      getHotSizeShortages,
+      getSellingOutSoon,
+      getAccessoryWarnings
+    } from "./data/stock-service.js";
+
+    mountErpShell("dashboard");
+
     const activeOrders = JSON.parse(localStorage.getItem("activeOrders") || "[]");
-
     document.getElementById("active-count").textContent = activeOrders.length;
-    document.getElementById("monthly-orders").textContent = activeOrders.length;
-    document.getElementById("monthly-revenue").textContent = `$${(activeOrders.length * 5000).toLocaleString()}`;
 
-    const today = new Date().toDateString();
-    const todayPerformance = activeOrders.find(order =>
-      order.items?.some(item =>
-        item.performanceDate && new Date(item.performanceDate).toDateString() === today
-      )
-    );
-    if (todayPerformance) {
-      document.getElementById("today-performance").textContent = `訂單 ${todayPerformance.id}`;
+    const lowStock = getLowStockAlerts();
+    const hotSizes = getHotSizeShortages();
+    const sellout = getSellingOutSoon();
+    const accessoryWarn = getAccessoryWarnings();
+
+    document.getElementById("low-stock-count").textContent = lowStock.length;
+    document.getElementById("sellout-count").textContent = sellout.length;
+    document.getElementById("accessory-count").textContent = accessoryWarn.length;
+
+    function renderStockRows(containerId, rows, formatter) {
+      const el = document.getElementById(containerId);
+      if (!rows.length) {
+        el.innerHTML = '<p class="empty-msg">目前無警示項目</p>';
+        return;
+      }
+      el.innerHTML = rows.map(formatter).join("");
     }
+
+    renderStockRows("low-stock-list", lowStock, s => `
+      <div class="list-item stock-row stock-${s.level}">
+        <strong>${s.costumeName} · ${s.size}</strong><br>
+        剩餘可租 <em>${s.remaining}</em> 件 · 已租 ${s.rented} / 原始 ${s.totalStock}
+        <span class="stock-badge stock-${s.level}">${s.label}</span>
+      </div>
+    `);
+
+    renderStockRows("hot-size-list", hotSizes, s => {
+      const rate = Math.round((s.rented / s.totalStock) * 100);
+      return `
+      <div class="list-item stock-row stock-${s.level}">
+        <strong>${s.costumeName} · ${s.size}</strong><br>
+        出租率 ${rate}% · 剩餘 ${s.remaining} 件
+        <span class="stock-badge stock-${s.level}">${s.label}</span>
+      </div>`;
+    });
+
+    renderStockRows("sellout-list", sellout, s => `
+      <div class="list-item stock-row stock-${s.level}">
+        <strong>${s.costumeName} · ${s.size}</strong><br>
+        剩餘可租 ${s.remaining} 件 · 建議補貨或調檔
+      </div>
+    `);
+
+    renderStockRows("accessory-list", accessoryWarn, s => `
+      <div class="list-item stock-row stock-${s.level}">
+        <strong>${s.name}</strong><br>
+        剩餘 ${s.remaining} 件 · 已租 ${s.rented} / 原始 ${s.totalStock}
+      </div>
+    `);
 
     const shippingList = document.getElementById("shipping-list");
     const shippingOrders = activeOrders.filter(o => o.status === "待出貨");
@@ -120,23 +185,6 @@
         shippingList.appendChild(div);
       });
     }
-
-    const inventory = [
-      { name: "敦煌飛天舞服", sizes: { S: 10, M: 3, L: 1 } },
-      { name: "原民羽飾套裝", sizes: { S: 0, M: 2, L: 5 } }
-    ];
-    const warningDiv = document.getElementById("stock-warning");
-    inventory.forEach(product => {
-      Object.entries(product.sizes).forEach(([size, qty]) => {
-        if (qty <= 2) {
-          const div = document.createElement("div");
-          div.className = "list-item";
-          div.innerHTML = `${product.name}｜${size} 尺寸<br>剩餘：${qty}`;
-          warningDiv.appendChild(div);
-        }
-      });
-    });
-    if (!warningDiv.innerHTML) warningDiv.innerHTML = '<p class="empty-msg">目前庫存充足</p>';
 
     const returnList = document.getElementById("return-list");
     const now = new Date();
@@ -155,11 +203,6 @@
       });
     });
     if (!returnList.innerHTML) returnList.innerHTML = '<p class="empty-msg">目前沒有即將歸還訂單</p>';
-  </script>
-
-  <script type="module">
-    import { mountErpShell } from "./components/erp-app.js";
-    mountErpShell("dashboard");
   </script>
 </body>
 </html>

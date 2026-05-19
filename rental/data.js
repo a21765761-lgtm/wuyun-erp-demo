@@ -9,7 +9,7 @@ export const costumes = [
     hue: "tiffany",
     pricePerDay: 320,
     sizes: ["S", "M", "L"],
-    stock: { S: 10, M: 8, L: 5 },
+    stock: { S: 10, M: 20, L: 5 },
     accessories: ["金色頭飾", "飛天披肩"],
     description: "經典敦煌系列，含水袖與漸層披帛。適合學校成果展、民族舞賽事。",
     highlights: ["含專用衣架袋", "可加購頭飾套組", "檔期熱門款"]
