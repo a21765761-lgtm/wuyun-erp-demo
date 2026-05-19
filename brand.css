@@ -79,6 +79,8 @@ body {
   overflow: hidden;
 }
 
+/* 與 .app 同層時由 .app { z-index:1 } 蓋住；在 .rental-app 內需見 rental.css */
+
 .stage-bg::before {
   content: '';
   position: absolute;
@@ -1695,5 +1697,15 @@ div.spotlight-main:not(.spotlight) {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* 避免 fill-mode: backwards 在縮短動畫後卡在 opacity: 0 */
+  .rental-hero,
+  .rental-card,
+  .costume-card,
+  .card,
+  .kpi-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

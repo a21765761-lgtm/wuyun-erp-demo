@@ -5,6 +5,17 @@
   flex-direction: column;
   position: relative;
   z-index: 1;
+  background: var(--black);
+}
+
+/*
+ * stage-bg 為 position:fixed + z-index:0，會畫在一般 in-flow 內容之上，
+ * 導致 main / steps 被擋住（僅 header 因 z-index:50 可見）。hover 時 transform
+ * 會建立新堆疊層才暫時露出。子層一律抬高到背景之上。
+ */
+.rental-app > :not(.stage-bg) {
+  position: relative;
+  z-index: 1;
 }
 
 .rental-header {
@@ -182,17 +193,19 @@
   max-width: 960px;
   width: 100%;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .rental-hero {
   margin-bottom: 24px;
-  animation: fadeUp 0.6s var(--ease-out) backwards;
 }
 
 .rental-hero h1 {
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 8px;
+  color: var(--cream);
   background: linear-gradient(90deg, var(--white), var(--tiffany-bright));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -206,8 +219,8 @@
 }
 
 .rental-card {
-  background: linear-gradient(160deg, rgba(28, 36, 50, 0.9) 0%, rgba(12, 16, 24, 0.95) 100%);
-  border: 1px solid rgba(45, 212, 191, 0.14);
+  background: linear-gradient(160deg, rgba(28, 36, 50, 0.95) 0%, rgba(12, 16, 24, 0.98) 100%);
+  border: 1px solid rgba(45, 212, 191, 0.22);
   border-radius: var(--radius-lg);
   padding: 22px 20px;
   box-shadow: var(--shadow-card);
@@ -316,7 +329,6 @@
   color: inherit;
   overflow: hidden;
   padding: 0;
-  animation: fadeUp 0.6s var(--ease-out) backwards;
 }
 
 .costume-card:hover {
