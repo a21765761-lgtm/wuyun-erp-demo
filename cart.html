@@ -38,6 +38,11 @@
 
     if (cart.length === 0) {
       emptyMsg.style.display = "block";
+    } else {
+      const checkout = document.createElement("p");
+      checkout.style.marginTop = "24px";
+      checkout.innerHTML = `<a href="checkout.html" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,var(--tiffany-neon),var(--tiffany-deep));color:#06080c;border-radius:999px;font-weight:600;text-decoration:none">前往確認訂單 →</a>`;
+      document.querySelector(".wrap").appendChild(checkout);
     }
 
     cart.forEach(item => {

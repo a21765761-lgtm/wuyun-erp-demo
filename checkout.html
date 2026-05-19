@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>確認訂單｜舞韻</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #0f172a;
+      color: white;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+    }
+
+    h1, h2 {
+      color: #2dd4bf;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 10px;
+      background: #334155;
+      color: white;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 15px;
+      border-bottom: 1px solid #334155;
+      text-align: left;
+    }
+
+    .total {
+      font-size: 24px;
+      margin-top: 20px;
+      color: #2dd4bf;
+      font-weight: bold;
+    }
+
+    .notice {
+      line-height: 1.8;
+      color: #cbd5e1;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      background: #14b8a6;
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.9;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    .agree-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .agree-label input {
+      width: auto;
+      margin: 4px 0 0;
+    }
+
+    .empty-cart {
+      color: #94a3b8;
+      padding: 20px 0;
+    }
+
+    .empty-cart a {
+      color: #2dd4bf;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>確認訂單</h1>
+
+  <div class="card">
+    <h2>客戶資料</h2>
+
+    <label>單位名稱</label>
+    <input type="text" id="orgName" placeholder="請輸入單位名稱" />
+
+    <label>聯絡人</label>
+    <input type="text" id="contactName" placeholder="請輸入聯絡人" />
+
+    <label>聯絡電話</label>
+    <input type="tel" id="phone" placeholder="請輸入聯絡電話" />
+
+    <label>LINE ID（選填）</label>
+    <input type="text" id="lineId" placeholder="請輸入 LINE ID" />
+
+    <label>Email（選填）</label>
+    <input type="email" id="email" placeholder="請輸入 Email" />
+
+    <label>寄送地址</label>
+    <textarea id="address" rows="3" placeholder="請輸入寄送地址"></textarea>
+
+    <label>特殊需求（選填）</label>
+    <textarea id="notes" rows="3" placeholder="例如急件、特殊尺寸等"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>訂單內容</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>品項</th>
+          <th>尺寸</th>
+          <th>數量</th>
+          <th>小計</th>
+        </tr>
+      </thead>
+      <tbody id="order-list"></tbody>
+    </table>
+
+    <div class="total" id="total-price">總金額：$0</div>
+  </div>
+
+  <div class="card">
+    <h2>租借注意事項</h2>
+
+    <div class="notice">
+      1. 表演結束後請立即清點所有服裝與配件。<br><br>
+      2. 請確認以下配件皆已完整回收：<br>
+      ・頭飾<br>
+      ・腰帶<br>
+      ・披肩<br>
+      ・飾品<br>
+      ・配件袋<br><br>
+      3. 若有缺件請立即聯繫舞韻。<br><br>
+      4. 若歸還後才發現缺件，需重新聯繫、補寄，將增加雙方作業時間。<br><br>
+      5. 部分特殊配件若遺失，可能需酌收賠償費用。
+    </div>
+
+    <label class="agree-label">
+      <input type="checkbox" id="agree" />
+      <span>我已閱讀並同意租借規範</span>
+    </label>
+
+    <button type="button" class="submit-btn" id="submitBtn">確認送出訂單</button>
+  </div>
+
+</div>
+
+<script type="module">
+import { getCart } from "./data/cart.js";
+
+const cart = getCart();
+const orderList = document.getElementById("order-list");
+const totalEl = document.getElementById("total-price");
+const submitBtn = document.getElementById("submitBtn");
+
+let total = 0;
+
+if (cart.length === 0) {
+  orderList.innerHTML = `
+    <tr>
+      <td colspan="4" class="empty-cart">
+        購物車是空的，請先至
+        <a href="rental/">租借流程</a>
+        選擇服裝。
+      </td>
+    </tr>
+  `;
+  submitBtn.disabled = true;
+  submitBtn.style.opacity = "0.5";
+} else {
+  cart.forEach(item => {
+    const subtotal = item.quantity * 1000;
+    total += subtotal;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${item.productName || "—"}</td>
+      <td>${item.size || "—"}</td>
+      <td>${item.quantity}</td>
+      <td>$${subtotal.toLocaleString()}</td>
+    `;
+    orderList.appendChild(tr);
+  });
+}
+
+totalEl.textContent = `總金額：$${total.toLocaleString()}`;
+
+document.getElementById("submitBtn").addEventListener("click", () => {
+  if (cart.length === 0) {
+    alert("購物車是空的");
+    return;
+  }
+
+  const agree = document.getElementById("agree").checked;
+  if (!agree) {
+    alert("請先同意租借規範");
+    return;
+  }
+
+  const orgName = document.getElementById("orgName").value.trim();
+  const contactName = document.getElementById("contactName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+
+  if (!orgName || !contactName || !phone || !address) {
+    alert("請填寫單位名稱、聯絡人、聯絡電話與寄送地址");
+    return;
+  }
+
+  alert("訂單已送出！");
+  localStorage.removeItem("cart");
+  window.location.href = "rental/";
+});
+</script>
+
+</body>
+</html>
