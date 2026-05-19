@@ -30,6 +30,7 @@
     .nav a {
       color: #2dd4bf;
       text-decoration: none;
+      margin-right: 16px;
     }
 
     .nav a:hover {
@@ -83,7 +84,10 @@
 <body>
 
 <div class="container">
-  <p class="nav"><a href="index.html">← 返回 Dashboard</a></p>
+  <p class="nav">
+    <a href="index.html">← 返回 Dashboard</a>
+    <a href="history-orders.html">歷史訂單</a>
+  </p>
   <h1>進行中訂單</h1>
   <div id="orders"></div>
 </div>
@@ -152,15 +156,38 @@ function(id, newStatus){
         order.status =
           newStatus;
 
+        if(newStatus === "完成"){
+
+          const historyOrders =
+            JSON.parse(
+              localStorage.getItem(
+                "historyOrders"
+              )
+            ) || [];
+
+          historyOrders.push(order);
+
+          localStorage.setItem(
+            "historyOrders",
+            JSON.stringify(historyOrders)
+          );
+
+        }
+
       }
 
       return order;
 
     });
 
+  const activeOnly =
+    updated.filter(
+      order => order.status !== "完成"
+    );
+
   localStorage.setItem(
     "activeOrders",
-    JSON.stringify(updated)
+    JSON.stringify(activeOnly)
   );
 
   location.reload();

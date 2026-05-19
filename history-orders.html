@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>歷史訂單｜舞韻</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #0f172a;
+      color: white;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #2dd4bf;
+      margin-bottom: 8px;
+    }
+
+    .nav {
+      margin-bottom: 28px;
+    }
+
+    .nav a {
+      color: #2dd4bf;
+      text-decoration: none;
+      margin-right: 16px;
+    }
+
+    .nav a:hover {
+      text-decoration: underline;
+    }
+
+    #history-list p {
+      color: #94a3b8;
+      padding: 24px 0;
+    }
+
+    .order-card {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+
+    .order-card h3 {
+      margin: 0 0 8px;
+      color: #2dd4bf;
+    }
+
+    .order-meta {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    .status-done {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(110, 231, 183, 0.15);
+      color: #6ee7b7;
+      font-size: 0.8rem;
+    }
+
+    .order-items {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      color: #e2e8f0;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <p class="nav">
+    <a href="index.html">← 返回 Dashboard</a>
+    <a href="active-orders.html">進行中訂單</a>
+  </p>
+  <h1>歷史訂單</h1>
+  <motion.div id="history-list"></div>
+</div>
+
+<script>
+const historyOrders = JSON.parse(
+  localStorage.getItem("historyOrders")
+) || [];
+
+const list = document.getElementById("history-list");
+
+if (historyOrders.length === 0) {
+  list.innerHTML = "<p>目前沒有歷史訂單</p>";
+} else {
+  historyOrders.forEach(order => {
+    const div = document.createElement("div");
+    div.className = "order-card";
+
+    const itemsHtml = (order.items || [])
+      .map(item => {
+        const name = item.productName || "品項";
+        const size = item.size ? ` · ${item.size}` : "";
+        const qty = item.quantity ?? 1;
+        return `<li>${name}${size} × ${qty}</li>`;
+      })
+      .join("");
+
+    div.innerHTML = `
+      <h3>訂單 #${order.id} <span class="status-done">${order.status || "完成"}</span></h3>
+      <p class="order-meta">
+        建立時間：
+        ${order.createdAt
+          ? new Date(order.createdAt).toLocaleString("zh-TW")
+          : "—"}
+      </p>
+      <ul class="order-items">${itemsHtml || "<li>（無品項）</li>"}</ul>
+    `;
+
+    list.appendChild(div);
+  });
+}
+</script>
+
+</body>
+</html>
