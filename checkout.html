@@ -187,7 +187,6 @@
 
 <script type="module">
 import { getCart } from "./data/cart.js";
-import { addActiveOrder } from "./data/active-orders.js";
 
 const cart = getCart();
 const orderList = document.getElementById("order-list");
@@ -255,12 +254,26 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     items: [...cart]
   };
 
-  addActiveOrder(order);
-  console.log(order);
+  const activeOrders =
+    JSON.parse(
+      localStorage.getItem(
+        "activeOrders"
+      )
+    ) || [];
+
+  activeOrders.push(order);
+
+  localStorage.setItem(
+    "activeOrders",
+    JSON.stringify(activeOrders)
+  );
 
   alert("訂單已送出！");
+
   localStorage.removeItem("cart");
-  window.location.href = "rental/";
+
+  window.location.href =
+    "active-orders.html";
 });
 </script>
 
