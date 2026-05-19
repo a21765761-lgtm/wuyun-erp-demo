@@ -153,6 +153,17 @@
   <div id="stock-warning"></div>
 </div>
 
+<div
+  class="card"
+  style="margin-top:30px;"
+>
+  <h2 style="color:#facc15;">
+    即將歸還
+  </h2>
+
+  <div id="return-list"></div>
+</div>
+
 <!-- 待出貨 -->
 <div
   class="card"
@@ -334,6 +345,85 @@ if(
 
   warningDiv.innerHTML =
     "<p>目前庫存充足</p>";
+
+}
+
+const returnList =
+  document.getElementById(
+    "return-list"
+  );
+
+const now = new Date();
+
+activeOrders.forEach(order => {
+
+  order.items.forEach(item => {
+
+    const performance =
+      new Date(
+        item.performanceDate
+      );
+
+    // N天後歸還
+    const returnDate =
+      new Date(performance);
+
+    returnDate.setDate(
+      returnDate.getDate() + 3
+    );
+
+    const diffTime =
+      returnDate - now;
+
+    const diffDays =
+      Math.ceil(
+        diffTime /
+        (1000 * 60 * 60 * 24)
+      );
+
+    // 3天內顯示
+    if(
+      diffDays >= 0 &&
+      diffDays <= 3
+    ){
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "list-item";
+
+      div.innerHTML = `
+
+        訂單：
+        ${order.id}<br>
+
+        品項：
+        ${item.productName}<br>
+
+        歸還日：
+        ${returnDate
+          .toLocaleDateString()}<br>
+
+        剩餘：
+        ${diffDays} 天
+
+      `;
+
+      returnList.appendChild(div);
+
+    }
+
+  });
+
+});
+
+if(
+  returnList.innerHTML === ""
+){
+
+  returnList.innerHTML =
+    "<p>目前沒有即將歸還訂單</p>";
 
 }
 
