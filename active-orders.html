@@ -60,14 +60,16 @@
       margin-bottom: 16px;
     }
 
-    .status {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(45, 212, 191, 0.15);
-      color: #5eead4;
-      font-size: 0.8rem;
-      margin-left: 8px;
+    .status-select {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: #334155;
+      color: white;
+      font-family: inherit;
+      font-size: 0.95rem;
+      min-width: 160px;
     }
 
     .order-items {
@@ -113,15 +115,57 @@ if (orders.length === 0) {
       })
       .join("");
 
+    const status = order.status || "待確認";
+
     card.innerHTML = `
-      <h3>訂單 #${order.id}<span class="status">${order.status || "待確認"}</span></h3>
+      <h3>訂單 #${order.id}</h3>
       <p class="order-meta">建立時間：${created}</p>
+      <select class="status-select" onchange="updateStatus('${order.id}', this.value)">
+        <option value="待確認" ${status === "待確認" ? "selected" : ""}>待確認</option>
+        <option value="待處理" ${status === "待處理" ? "selected" : ""}>待處理</option>
+        <option value="已出貨" ${status === "已出貨" ? "selected" : ""}>已出貨</option>
+        <option value="已歸還" ${status === "已歸還" ? "selected" : ""}>已歸還</option>
+        <option value="完成" ${status === "完成" ? "selected" : ""}>完成</option>
+      </select>
       <ul class="order-items">${itemsHtml || "<li>（無品項）</li>"}</ul>
     `;
 
     ordersDiv.appendChild(card);
   });
 }
+
+window.updateStatus =
+function(id, newStatus){
+
+  const orders =
+    JSON.parse(
+      localStorage.getItem(
+        "activeOrders"
+      )
+    ) || [];
+
+  const updated =
+    orders.map(order => {
+
+      if(order.id == id){
+
+        order.status =
+          newStatus;
+
+      }
+
+      return order;
+
+    });
+
+  localStorage.setItem(
+    "activeOrders",
+    JSON.stringify(updated)
+  );
+
+  location.reload();
+
+};
 </script>
 
 </body>
