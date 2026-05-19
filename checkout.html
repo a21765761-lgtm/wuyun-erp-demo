@@ -187,7 +187,7 @@
 
 <script type="module">
 import { getCart } from "./data/cart.js";
-import { activeOrders } from "./data/active-orders.js";
+import { addActiveOrder } from "./data/active-orders.js";
 
 const cart = getCart();
 const orderList = document.getElementById("order-list");
@@ -255,7 +255,7 @@ document.getElementById("submitBtn").addEventListener("click", () => {
     items: [...cart]
   };
 
-  activeOrders.push(order);
+  addActiveOrder(order);
   console.log(order);
 
   alert("訂單已送出！");
