@@ -148,47 +148,52 @@ function(id, newStatus){
       )
     ) || [];
 
-  const updated =
-    orders.map(order => {
-
-      if(order.id == id){
-
-        order.status =
-          newStatus;
-
-        if(newStatus === "完成"){
-
-          const historyOrders =
-            JSON.parse(
-              localStorage.getItem(
-                "historyOrders"
-              )
-            ) || [];
-
-          historyOrders.push(order);
-
-          localStorage.setItem(
-            "historyOrders",
-            JSON.stringify(historyOrders)
-          );
-
-        }
-
-      }
-
-      return order;
-
-    });
-
-  const activeOnly =
-    updated.filter(
-      order => order.status !== "完成"
+  const targetOrder =
+    orders.find(
+      order => order.id == id
     );
 
-  localStorage.setItem(
-    "activeOrders",
-    JSON.stringify(activeOnly)
-  );
+  if(targetOrder){
+
+    targetOrder.status =
+      newStatus;
+
+    if(newStatus === "完成"){
+
+      const historyOrders =
+        JSON.parse(
+          localStorage.getItem(
+            "historyOrders"
+          )
+        ) || [];
+
+      historyOrders.push(targetOrder);
+
+      localStorage.setItem(
+        "historyOrders",
+        JSON.stringify(historyOrders)
+      );
+
+      const activeOnly =
+        orders.filter(
+          order => order.id != id
+        );
+
+      localStorage.setItem(
+        "activeOrders",
+        JSON.stringify(activeOnly)
+      );
+
+    } else {
+
+      localStorage.setItem(
+        "activeOrders",
+        JSON.stringify(orders)
+      );
+
+    }
+
+  }
 
   location.reload();
 
